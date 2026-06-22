@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run tests
+        run: npm test
+
+      - name: Run benchmark
+        run: |
+          node benchmark.js 2>&1 | tee benchmark-output.txt
+          # Fail if F1 drops below 95%
+          F1=$(grep MICRO benchmark-output.txt | awk '{print $7}' | tr -d '%')
+          echo "F1 score: $F1%"
+          if [ "$(echo "$F1 < 95.0" | bc)" -eq 1 ]; then
+            echo "::error::Benchmark F1 score $F1% is below 95% threshold"
+            exit 1
+          fi
+
+  pages:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/configure-pages@v5
+
+      - name: Build dist
+        run: |
+          mkdir -p dist/lib
+          cp index.html style.css app.js anonymizer.js ner-engine.js ner-worker.js dictionaries.js recognizers.js dist/
+          cp lib/*.js lib/*.mjs lib/*.wasm.js lib/*.traineddata dist/lib/
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+      - id: deploy
+        uses: actions/deploy-pages@v4

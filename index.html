@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' blob: 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; object-src 'none'; base-uri 'none'; worker-src 'self' blob:">
+    <meta name="referrer" content="no-referrer">
+    <title>Perde Web</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='4' y='14' width='24' height='16' rx='3' fill='%231a1917'/><path d='M10 14V10a6 6 0 0 1 12 0v4' fill='none' stroke='%231a1917' stroke-width='3' stroke-linecap='round'/><circle cx='16' cy='22' r='2.5' fill='%23fff'/></svg>">
+    <link rel="stylesheet" href="style.css?v=17.1">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <svg class="logo-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M3 5h18v2H3z" fill="rgba(255,255,255,0.5)"/>
+                    <path d="M5 7v10M9 7v12M13 7v10M17 7v12M21 7v10" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <h1>perde<span>.web</span></h1>
+            </div>
+            <div class="header-right">
+                <a href="https://github.com/ersancetin" target="_blank" rel="noopener" title="GitHub" class="header-social">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <div id="inputView">
+                <div class="hero">
+                    <svg class="hero-icon" width="36" height="36" viewBox="0 0 32 32" fill="none">
+                        <rect x="4" y="4" width="24" height="24" rx="3" stroke="currentColor" stroke-width="1" opacity="0.15"/>
+                        <line x1="4" y1="8" x2="28" y2="8" stroke="currentColor" stroke-width="0.7" opacity="0.12"/>
+                        <line x1="4" y1="13" x2="28" y2="13" stroke="currentColor" stroke-width="0.7" opacity="0.12"/>
+                        <line x1="4" y1="18" x2="28" y2="18" stroke="currentColor" stroke-width="0.7" opacity="0.12"/>
+                        <rect x="8" y="10" width="10" height="2" rx="1" fill="currentColor" opacity="0.10"/>
+                        <rect x="8" y="15" width="14" height="2" rx="1" fill="currentColor" opacity="0.10"/>
+                        <rect x="8" y="20" width="8" height="2" rx="1" fill="currentColor" opacity="0.10"/>
+                    </svg>
+                    <h2 class="hero-title">Kişisel veriler sizde kalır.</h2>
+                    <p class="hero-sub">Açık kaynak, tamamen bilgisayarınızda çalışır. Hiçbir veri dışarı çıkmaz.</p>
+                </div>
+                <div class="input-section">
+                    <div class="textarea-wrap" id="textareaWrap">
+                        <label for="inputText" class="sr-only">Analiz edilecek metin</label>
+                        <textarea id="inputText" placeholder="Analiz edilecek metni buraya yapıştırın veya dosya yükleyin (PDF, DOCX, UDF)..."></textarea>
+                        <div class="drop-overlay" id="dropOverlay">
+                            <svg width="28" height="28" viewBox="0 0 16 16" fill="currentColor" opacity="0.4"><path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5zM9.5 1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V5H9.5V1z"/></svg>
+                            <span>Dosyayı bırakın</span>
+                        </div>
+                    </div>
+                    <div class="input-bar">
+                        <div class="input-bar-left">
+                            <button id="pdfBtn" class="btn-icon" title="Dosya yükle (PDF, DOCX, UDF)" aria-label="Dosya yükle">
+                                <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5zM9.5 1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V5H9.5V1zM5 7h6v1H5V7zm0 2h6v1H5V9zm0 2h4v1H5v-1z"/></svg>
+                            </button>
+                            <input type="file" id="pdfFileInput" accept=".pdf,.docx,.udf,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="display:none">
+                            <button id="sampleBtn" class="btn-text">Örnek</button>
+                            <span class="separator"></span>
+                            <button id="settingsToggle" class="btn-text" aria-expanded="false" aria-controls="settingsPanel">
+                                <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/><path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.421 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.421-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.421-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.116l.094-.318z"/></svg>
+                                <span id="profileSummary" class="profile-summary">Tümü · 102 entity · 0.35</span>
+                            </button>
+                        </div>
+                        <button id="analyzeBtn" class="btn-primary">Analiz Et</button>
+                    </div>
+                    <div class="privacy-line">
+                        <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>
+                        Belge sunucuya gönderilmez; analiz tarayıcınızda yapılır. Sonuçlar kontrol edilmelidir.
+                    </div>
+                </div>
+
+                <div id="settingsPanel" class="settings-panel" style="display:none;">
+                    <div class="settings-row">
+                        <div class="setting-item">
+                            <label for="anonymizeMethod">Yöntem</label>
+                            <select id="anonymizeMethod">
+                                <option value="replace">Etiketle</option>
+                                <option value="mask">Maskele (****)</option>
+                                <option value="partial">Kısmi (Ah***az)</option>
+                                <option value="redact">Sil</option>
+                                <option value="hash">Hmac</option>
+                            </select>
+                        </div>
+                        <div id="hashWarning" class="hash-warning" style="display:none;">Hmac-Sha-256</div>
+                        <div class="setting-item" id="maskCharGroup" style="display:none;">
+                            <label for="maskChar">Karakter</label>
+                            <select id="maskChar">
+                                <option value="*">*</option>
+                                <option value="#">#</option>
+                                <option value="X">X</option>
+                            </select>
+                        </div>
+                        <div class="setting-item">
+                            <label for="thresholdSlider">Eşik: <strong id="thresholdValue">0.35</strong></label>
+                            <input type="range" id="thresholdSlider" min="0" max="1" step="0.05" value="0.35">
+                        </div>
+                        <div class="setting-item">
+                            <label for="profileSelect">Profil</label>
+                            <select id="profileSelect">
+                                <option value="tumunu-sec" selected>Tümü</option>
+                                <option value="temel">Temel</option>
+                                <option value="hukuk">Hukuk</option>
+                                <option value="finans">Finans</option>
+                                <option value="saglik">Sağlık</option>
+                                <option value="kvkk">Kvkk</option>
+                                <option value="teknik">Teknik</option>
+                                <option value="uluslararasi">Uluslararası</option>
+                            </select>
+                        </div>
+                        <div class="setting-item">
+                            <button id="selectAll" class="btn-text btn-xs">Tümü</button>
+                            <button id="deselectAll" class="btn-text btn-xs">Sıfırla</button>
+                        </div>
+                    </div>
+                    <div class="entity-search-wrap">
+                        <input type="text" id="entitySearch" class="entity-search" placeholder="Varlık ara...">
+                    </div>
+                    <div id="entityToggles" class="toggles-container"></div>
+                    <span class="entity-counter" id="entityTotalBadge"></span>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="site-footer" id="siteFooter">
+        <span>by <a href="https://linkedin.com/in/ersan-cetin" target="_blank" rel="noopener">Ersan Cetin</a></span>
+    </footer>
+
+    <div id="resultsView" style="display:none;">
+        <div class="results-summary">
+            <span id="resultsSummary" class="summary-stats"></span>
+            <button id="newBtn" class="summary-back" aria-label="Yeni belge analiz et">Yeni Belge</button>
+        </div>
+        <div id="scanWarning" class="scan-warning" role="alert" aria-live="polite" style="display:none;"></div>
+        <div class="mobile-tabs" id="mobileTabs">
+            <button class="mobile-tab active" data-tab="findings">Tespitler <span id="mobileTabCount"></span></button>
+            <button class="mobile-tab" data-tab="output">Belge</button>
+        </div>
+        <div class="results-grid">
+            <div class="findings-panel">
+                <div class="findings-header">
+                    <span class="findings-title">Tespitler</span>
+                    <span id="findingsCount" class="findings-count"></span>
+                </div>
+                <div class="findings-toolbar">
+                    <input type="text" id="findingsSearch" class="findings-search" placeholder="Ara...">
+                    <select id="findingsFilter" class="findings-filter" aria-label="Filtrele">
+                        <option value="all">Tümü</option>
+                        <option value="masked">Maskelenecek</option>
+                        <option value="kept">Korunan</option>
+                        <option value="manual">Manuel</option>
+                        <option value="low">Düşük güven</option>
+                    </select>
+                </div>
+                <div id="findingsList" class="findings-list"></div>
+            </div>
+            <div class="output-panel">
+                <div class="output-header">
+                    <div class="output-header-left">
+                        <select id="resultMethod" class="result-method-select" aria-label="Anonimleştirme yöntemi">
+                            <option value="replace">Etiketle</option>
+                            <option value="mask">Maskele</option>
+                            <option value="partial">Kısmi</option>
+                            <option value="redact">Sil</option>
+                            <option value="hash">Hmac</option>
+                        </select>
+                    </div>
+                    <div class="output-header-right">
+                        <button id="downloadBtn" class="btn-text" disabled aria-label="TXT olarak indir">TXT</button>
+                        <button id="copyBtn" class="btn-text" disabled>Kopyala</button>
+                    </div>
+                </div>
+                <div id="outputText" class="output-area"></div>
+                <div class="output-hint desktop-hint">Metin seçip <kbd>Ctrl</kbd>+<kbd>M</kbd> ile hızlıca maskeleyebilirsiniz</div>
+                <div class="output-hint mobile-hint">Metni seçerek maskeleyin</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="lib/jszip.min.js"></script>
+    <script src="dictionaries.js?v=15.0"></script>
+    <script src="recognizers.js?v=15.0"></script>
+    <script src="ner-engine.js?v=15.0"></script>
+    <script src="anonymizer.js?v=15.0"></script>
+    <script src="app.js?v=17.0"></script>
+</body>
+</html>

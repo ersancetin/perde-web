@@ -1,0 +1,16 @@
+{
+  "name": "perde-web",
+  "version": "0.1.0-beta",
+  "description": "Client-side PII detection and anonymization for Turkish legal documents",
+  "private": true,
+  "scripts": {
+    "test": "node test.js",
+    "benchmark": "node benchmark.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "jszip": "^3.10.1",
+    "pdfjs-dist": "^6.0.227",
+    "tesseract.js": "^7.0.0"
+  }
+}
