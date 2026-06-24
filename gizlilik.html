@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; object-src 'none'; base-uri 'none'">
+    <meta name="referrer" content="no-referrer">
+    <title>Gizlilik ve Güvenlik · Perde Web</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='4' y='14' width='24' height='16' rx='3' fill='%231a1917'/><path d='M10 14V10a6 6 0 0 1 12 0v4' fill='none' stroke='%231a1917' stroke-width='3' stroke-linecap='round'/><circle cx='16' cy='22' r='2.5' fill='%23fff'/></svg>">
+    <link rel="stylesheet" href="style.css?v=22.0">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <svg class="logo-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M3 5h18v2H3z" fill="rgba(255,255,255,0.5)"/>
+                    <path d="M5 7v10M9 7v12M13 7v10M17 7v12M21 7v10" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <h1>perde<span>.web</span></h1>
+            </div>
+            <div class="header-right">
+                <a href="index.html" class="header-back">← Araca dön</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="doc-page">
+            <h1 class="doc-title">Gizlilik ve Güvenlik</h1>
+            <p class="doc-lead">Perde Web, hukuk belgelerindeki kişisel verileri <strong>tamamen tarayıcınızda</strong> tespit edip maskeler. Belgeniz bilgisayarınızdan çıkmaz, hiçbir sunucuya gönderilmez, hiçbir yere kaydedilmez.</p>
+
+            <div class="doc-tldr">
+                <div class="doc-tldr-item"><span class="doc-check">✓</span> Belge sunucuya gönderilmez</div>
+                <div class="doc-tldr-item"><span class="doc-check">✓</span> Hiçbir veri saklanmaz</div>
+                <div class="doc-tldr-item"><span class="doc-check">✓</span> İzleme/analitik yok</div>
+            </div>
+
+            <h2 class="doc-h2">Verileriniz nerede işlenir?</h2>
+            <ul class="doc-list">
+                <li>Yüklediğiniz dosyanın (PDF, DOCX, UDF) okunması, kişisel veri tespiti ve maskeleme dahil <strong>tüm işlemler tarayıcınızda</strong> çalışır. Ağır analiz, arayüzü kilitlememek için bir Web Worker'da yapılır.</li>
+                <li>Yüklediğiniz dosya veya yapıştırdığınız metin <strong>hiçbir sunucuya gönderilmez</strong>; cihazınızdan çıkmaz.</li>
+                <li><strong>Üçüncü taraf isteği yoktur:</strong> harici CDN, yazı tipi, analitik aracı veya izleme çerezi kullanılmaz. Bu, sayfanın İçerik Güvenliği Politikası (CSP) ile teknik olarak <strong>zorunlu kılınmıştır</strong> — tarayıcı, siteden başka bir adrese veri göndermeyi engeller.</li>
+            </ul>
+
+            <h2 class="doc-h2">Hiçbir şey saklanmaz</h2>
+            <ul class="doc-list">
+                <li>Çerez kullanılmaz; belgeniz veya kişisel veriler tarayıcı deposuna (localStorage vb.) yazılmaz.</li>
+                <li>Anonimleştirme eşleştirmesi (örn. <code>[KISI_1] → Ahmet Yılmaz</code>) yalnızca <strong>açık sekmenin geçici belleğinde</strong> tutulur. Sekmeyi kapattığınızda ya da "Yeni Belge" dediğinizde silinir; kalıcı bir kayıt oluşmaz.</li>
+            </ul>
+
+            <h2 class="doc-h2">Yapay zeka kullanırken veri ne zaman dışarı çıkar?</h2>
+            <p class="doc-p">Perde'nin kendisi hiçbir yapay zekaya bağlanmaz. Yapay zeka iş akışında veri akışı tamamen sizin kontrolünüzdedir:</p>
+            <ul class="doc-list">
+                <li>Veri yalnızca <strong>siz "Promptu Kopyala" deyip kendi yapay zeka aracınıza (ChatGPT, Claude, Gemini vb.) yapıştırdığınızda</strong> dışarı çıkar — ve o zaman bile dışarı giden metin <strong>maskelenmiş (anonim) metindir</strong>.</li>
+                <li><strong>Etiket sözlüğü</strong> (token'ların gerçek karşılıkları) yapay zekaya <strong>hiçbir zaman gönderilmez</strong>, "Promptu Kopyala" ile kopyalanmaz; yalnızca sizde görünür.</li>
+                <li>Metni yapay zekaya yapıştırdıktan sonra, o veri artık <strong>seçtiğiniz yapay zeka sağlayıcısının gizlilik politikasına</strong> tabidir. Bu nokta Perde'nin kontrolü dışındadır; bu yüzden göndermeden önce anonim metni gözden geçirmeniz önerilir.</li>
+            </ul>
+
+            <h2 class="doc-h2">GitHub Pages</h2>
+            <p class="doc-p">Site, GitHub Pages üzerinden sunulur. GitHub, siteye erişiminize ait standart metadata'yı (IP adresi, tarayıcı bilgisi) <a href="https://docs.github.com/en/pages/getting-started-with-github-pages/about-github-pages#data-collection" target="_blank" rel="noopener noreferrer">kendi politikası</a> gereği loglar. Bu loglar <strong>belge içeriğinizi kapsamaz</strong> — yalnızca siteye erişimi kaydeder.</p>
+
+            <h2 class="doc-h2">Ne garanti edilir, ne edilmez</h2>
+            <div class="doc-grid">
+                <div class="doc-card doc-card-yes">
+                    <div class="doc-card-h">Garanti edilir</div>
+                    <ul>
+                        <li>Belge içeriği Perde tarafından sunucuya gönderilmez.</li>
+                        <li>Analiz tarayıcınızda, çevrimdışı bile çalışacak şekilde yürütülür.</li>
+                        <li>Hiçbir izleme veya üçüncü taraf isteği yapılmaz.</li>
+                    </ul>
+                </div>
+                <div class="doc-card doc-card-no">
+                    <div class="doc-card-h">Garanti edilmez</div>
+                    <ul>
+                        <li>Tam anonimleştirme veya KVKK uyumluluğu. Bu araç tek başına hukuken anonim hale getirme garantisi vermez.</li>
+                        <li>Maskelemenin eksiksizliği — bir tanımlayıcı kaçabilir; olayın anlatısı, isimler maskelense de kişiyi tanınabilir kılabilir.</li>
+                        <li>Yapay zekanın doğruluğu — çıktı uydurma karar/atıf içerebilir.</li>
+                    </ul>
+                </div>
+            </div>
+            <p class="doc-note">Bu nedenle: çıktı her zaman bir avukat tarafından kontrol edilmelidir. Perde, avukatın yerini almaz; yapay zeka kullanırken riskini azaltır.</p>
+
+            <h2 class="doc-h2">Şeffaflık</h2>
+            <p class="doc-p">Perde açık kaynaktır. Kaynak kodu ve ayrıntılı <a href="THREAT_MODEL.md">tehdit modeli</a> (güven sınırı, veri akışları, riskler) incelenebilir: <a href="https://github.com/ersancetin/presidio-browser" target="_blank" rel="noopener noreferrer">github.com/ersancetin</a>.</p>
+
+            <p class="doc-back"><a href="index.html" class="btn-primary btn-sm">← Araca dön</a></p>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <span><a href="index.html">Perde Web</a> · <a href="gizlilik.html">Gizlilik</a> · by <a href="https://linkedin.com/in/ersan-cetin" target="_blank" rel="noopener">Ersan Cetin</a></span>
+    </footer>
+</body>
+</html>

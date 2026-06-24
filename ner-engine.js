@@ -463,6 +463,10 @@ function detectOrganizations(text) {
     // 2) Organization suffix patterns: "[Capitalized Words] Hastanesi/Üniversitesi/..."
     const ORG_STOP_WORDS = new Set(['bu', 'şu', 'o', 'bir', 'her', 'bazı', 'tüm', 'hiç',
         've', 'ile', 'veya', 'ama', 'da', 'de', 'ki', 'gibi', 'için', 'olan', 'diğer']);
+    // "X birliği/derneği" eki org gibi görünen ama hukuki/genel kavram olan kalıplar
+    const NON_ORG_PHRASES = new Set(['evlilik birliği', 'iş birliği', 'işbirliği',
+        'güç birliği', 'fikir birliği', 'menfaat birliği', 'mal birliği', 'kader birliği',
+        'eylem birliği', 'dil birliği', 'düşünce birliği', 'aile birliği', 'söz birliği']);
     const COURT_SUFFIXES_SET = new Set(['mahkemesi', 'savcılığı', 'noterliği', 'adliyesi']);
     const NOTARY_SUFFIXES_SET = new Set(['noterliği']);
     for (const suffix of ORG_SUFFIXES) {
@@ -484,8 +488,16 @@ function detectOrganizations(text) {
                 } else break;
             }
             if (nameWords.length === 0) continue;
+            // Baştaki iyelik/rol kelimelerini at ("Şirketimiz Parlak Ambalaj" -> "Parlak Ambalaj")
+            const ORG_LEADING_DROP = new Set(['şirketimiz', 'firmamız', 'firmamiz', 'müvekkilimiz', 'muvekkilimiz',
+                'müvekkil', 'muvekkil', 'davacı', 'davaci', 'davalı', 'davali', 'borçlu', 'borclu',
+                'alacaklı', 'alacakli', 'müşteki', 'musteki', 'sanık', 'sanik', 'keşideci', 'kesideci', 'muhatap']);
+            while (nameWords.length > 1 && ORG_LEADING_DROP.has(trLower(nameWords[0]))) {
+                nameWords.shift();
+            }
             const prefix = nameWords[0];
             if (ORG_STOP_WORDS.has(trLower(prefix))) continue;
+            if (NON_ORG_PHRASES.has(trLower(nameWords.join(' ') + ' ' + sm[0]))) continue;
             const orgSuffixSet = new Set(ORG_SUFFIXES.map(s => trLower(s)));
             const hasProperName = nameWords.some(w => !orgSuffixSet.has(trLower(w)));
             if (!hasProperName) continue;
@@ -493,13 +505,17 @@ function detectOrganizations(text) {
             const startIdx = text.lastIndexOf(nameWords[0], suffixStart);
             if (startIdx === -1) continue;
             let endIdx = suffixStart + sm[0].length;
-            const after = text.substring(endIdx, endIdx + 15);
-            const legalSuffix = after.match(/^\s*(A\.Ş\.|Ltd\.\s*Şti\.|Şti\.|Ltd\.)/i);
+            const after = text.substring(endIdx, endIdx + 30);
+            // "San." sonrası "Tic. Ltd. Şti." gibi zincirleri de tüket
+            const legalSuffix = after.match(/^\s*((?:(?:San|Tic|Müh|[İiI]nş|Turz|G[ıi]da|Paz|D[ıi]ş|[İiI]th|[İiI]hr|Nak|Loj)\.?\s*|ve\s+)*(?:A\.Ş\.?|Ltd\.?\s*Şti\.?|Şti\.?|Ltd\.))/i);
             if (legalSuffix) {
                 endIdx += legalSuffix[0].length;
                 orgName = orgName + legalSuffix[0];
             }
-            const fullMatch = orgName.trim();
+            // Değer, kaynak metnin birebir alt dizisi olmalı (ör. "Başsavcılığı"
+            // tek kelime; yeniden kurulan "Baş Savcılığı" boşluğu olmamalı).
+            const textValue = text.substring(startIdx, endIdx).trim();
+            const fullMatch = textValue || orgName.trim();
             const matchTypes = [suffixEntity, 'ORGANIZATION', 'COURT'];
             const overlaps = findings.some(f =>
                 startIdx < f.end && endIdx > f.start && matchTypes.includes(f.entity)
@@ -543,7 +559,7 @@ function detectOrganizations(text) {
                     headerWords.unshift(w);
                 } else break;
             }
-            const minWords = entityType === 'COURT' ? 1 : 2;
+            const minWords = (entityType === 'COURT' || entityType === 'NOTARY') ? 1 : 2;
             if (headerWords.length < minWords) continue;
             const fullHeader = headerWords.join(' ') + ' ' + text.substring(sufStart, sufEnd);
             if (entityType === 'COURT' && /\b(?:vergi|tapu|nüfus|emniyet|sgk|sosyal\s*güvenlik)\s+dairesi\b/i.test(trLower(fullHeader))) continue;
@@ -565,9 +581,12 @@ function detectOrganizations(text) {
                 matchTypes.includes(f.entity) && f.start <= headerStart && f.end >= sufEnd
             );
             if (!alreadyWider) {
+                // Değer kaynak metnin birebir alt dizisi olmalı ("Başsavcılığı"
+                // tek kelime; yeniden kurulan "Baş Savcılığı" boşluğu olmasın).
+                const headerValue = text.substring(headerStart, sufEnd).trim();
                 findings.push({
                     entity: entityType,
-                    value: fullHeader.trim(),
+                    value: headerValue || fullHeader.trim(),
                     start: headerStart,
                     end: sufEnd,
                     score: 0.9,
@@ -636,14 +655,23 @@ function detectLocations(text) {
 
     // Address patterns (street/avenue + optional number)
     const addressPatterns = [
-        /((?:[A-ZÇĞİÖŞÜa-zçğıöşü]+\s+){0,3}(?:[Cc]addesi|[Cc]adde|[Cc]ad\.|[Ss]okak|[Ss]ok\.|[Ss]okağı|[Bb]ulvarı|[Bb]lv\.|[Mm]ahallesi|[Mm]ah\.|[Kk]öyü|[Ss]itesi|[Aa]pt\.|[Aa]partmanı)(?:\s+(?:No|no|NO)[:\.]?\s*\d+(?:\/\d+)?)?)/g,
+        /((?:[A-ZÇĞİÖŞÜ][a-zçğıöşüA-ZÇĞİÖŞÜ]*\s+){1,3}(?:[Cc]addesi|[Cc]adde|[Cc]ad\.|[Ss]okak|[Ss]ok\.|[Ss]okağı|[Bb]ulvarı|[Bb]lv\.|[Mm]ahallesi|[Mm]ah\.|[Kk]öyü|[Ss]itesi|[Aa]pt\.|[Aa]partmanı)(?:\s+(?:No|no|NO)[:\.]?\s*\d+(?:\/\d+)?)?)/g,
     ];
 
+    // "sitesi" eki konut sitesi değil web sitesi olan kalıplar (LOCATION değil)
+    // trLower ile Türkçe-duyarlı küçültme yapılır (büyük "İnternet" de yakalanır).
+    const NON_LOC_SITE = /(?:internet|web|haber|alışveriş|alisveris|e-?ticaret|bahis|oyun|sosyal\s*medya|ihale|kuyumcu)\s+sitesi\b/;
     for (const pattern of addressPatterns) {
         const regex = new RegExp(pattern.source, pattern.flags);
         while ((m = regex.exec(text)) !== null) {
-            const addrStart = m.index + m[0].indexOf(m[1]);
-            const addrEnd = addrStart + m[1].length;
+            if (NON_LOC_SITE.test(trLower(m[1]))) continue;
+            let mval = m[1];
+            let mstart = m.index + m[0].indexOf(m[1]);
+            // Baştaki rol/etiket kelimesini at ("Davacı Bağdat Caddesi" -> "Bağdat Caddesi")
+            const roleM = mval.match(/^(?:Davac[ıi]|Daval[ıi]|Bor[çc]lu|Alacakl[ıi]|Müvekk[İi]l[İi]?|San[ıi][kğ][ıi]?|Müştek[İi]|Vek[İi]l[İi]|Muhatap|Keş[İi]dec[İi]|Mağdur|Tan[ıi][kğ]|Sat[ıi]c[ıi]|Al[ıi]c[ıi]|Adres[İi]?)\s+/);
+            if (roleM) { mstart += roleM[0].length; mval = mval.substring(roleM[0].length); }
+            const addrStart = mstart;
+            const addrEnd = addrStart + mval.length;
             const contained = findings.some(f =>
                 f.start <= addrStart && f.end >= addrEnd &&
                 f.entity === 'LOCATION'
@@ -657,7 +685,7 @@ function detectLocations(text) {
                 }
                 findings.push({
                     entity: 'LOCATION',
-                    value: m[1],
+                    value: mval,
                     start: addrStart,
                     end: addrEnd,
                     score: 0.75,
@@ -685,7 +713,7 @@ function detectLocations(text) {
             addrLines.push(trimmed);
             if (addrLines.length >= 3) break;
         }
-        const inlineField = addrLines[0] ? addrLines[0].search(/\s+(?:Tel(?:efon)?|Faks|GSM|Cep|[Ee]\-?posta|KEP)\s*[:\-]/) : -1;
+        const inlineField = addrLines[0] ? addrLines[0].search(/\s+(?:Tel(?:efon)?|Faks|GSM|Cep|[Ee]\-?posta|KEP|[İiI]leti[şs]im|[İiI]rtibat)\s*[:\-]/) : -1;
         if (inlineField > 0) addrLines[0] = addrLines[0].substring(0, inlineField).trim();
         let addrVal = addrLines.join(' ').replace(/\s+/g, ' ').trim();
         if (addrVal.length >= 10 && addrSignals.test(addrVal)) {
@@ -757,7 +785,7 @@ function detectAddressBlocks(text, locationFindings) {
     let im;
     while ((im = inlineRe.exec(text)) !== null) {
         let val = im[1].trim();
-        const cutMatch = val.match(/\s+(?:Tel(?:efon)?|Faks?|GSM|Cep|E-posta)\s*[:\-]/i);
+        const cutMatch = val.match(/\s+(?:Tel(?:efon)?|Faks?|GSM|Cep|E-posta|[İiI]leti[şs]im|[İiI]rtibat)\s*[:\-]/i);
         if (cutMatch) val = val.substring(0, cutMatch.index).trim();
         const valStart = im.index + im[0].indexOf(im[1]);
         // Collect continuation lines (address spanning multiple lines)
@@ -791,6 +819,55 @@ function detectAddressBlocks(text, locationFindings) {
         });
     }
     return findings;
+}
+
+// Bitişik LOCATION parçalarını (yalnızca bağlayıcılarla ayrılmış ve içinde
+// sokak sinyali olan) tek bir ADDRESS bloğuna birleştirir. Etiketsiz adresler
+// "X Cad. No:5 İlçe/İl" tek parça maskelensin diye. Muhafazakâr: parçalar
+// arasında yalnızca boşluk/ "/" / "," / "-" / "." olabilir (cümle kelimesi yok).
+function mergeAddressFragments(allFindings, text, enabledEntities) {
+    if (!enabledEntities.has('ADDRESS')) return;
+    const STREET = /(?:caddes[İiı]|cadde|cad\.|sokak|sok\.|soka[ğg][İiı]|bulvar|blv|mahalles[İiı]|mah\.|mahalle|köyü|sites[İiı]|apartman|no\s*:?\s*\d)/i;
+    const ROLE = /^(?:davac[ıi]|daval[ıi]|bor[çc]lu|alacakl[ıi]|müvekk[İi]l[İi]?|san[ıi][ğk]?[ıi]?|müştek[İi]|vek[İi]l[İi]|muhatap|keş[İi]dec[İi]|mağdur|adres[İi]?|[İi]kametg[âa]h[ıi]?)\s+/i;
+    const parts = allFindings
+        .filter(f => f.entity === 'LOCATION' || f.entity === 'ADDRESS')
+        .sort((a, b) => a.start - b.start);
+    const toRemove = new Set();
+    const toAdd = [];
+    let i = 0;
+    while (i < parts.length) {
+        let j = i;
+        while (j + 1 < parts.length) {
+            const gap = text.substring(parts[j].end, parts[j + 1].start);
+            if (!/^[\s\/,.\-]{0,4}$/.test(gap)) break;          // yalnızca kısa bağlayıcı
+            j++;
+        }
+        if (j > i) {                                            // en az 2 bitişik parça
+            const runStart = parts[i].start, runEnd = parts[j].end;
+            let full = text.substring(runStart, runEnd);
+            if (STREET.test(full)) {                            // adres gibi görünmeli
+                let s = runStart;
+                const rm = full.match(ROLE);
+                if (rm) { s = runStart + rm[0].length; full = text.substring(s, runEnd); }
+                // Zaten bu aralığı kapsayan bir ADDRESS varsa ekleme
+                const exists = allFindings.some(f => f.entity === 'ADDRESS' && f.start <= s && f.end >= runEnd);
+                if (!exists && (runEnd - s) >= 8) {
+                    // Yüksek skorlu ADDRESS ekle — dedup'ta bitişik LOCATION parçalarını
+                    // (aynı/yakın başlangıç, daha düşük skor) yener, tüm adres tek blok
+                    // maskelenir. LOCATION'lar bilerek KALDIRILMAZ (mevcut testler korunur;
+                    // anonymizer/dedup ADDRESS'i tercih eder).
+                    toAdd.push({ entity: 'ADDRESS', value: full.trim(), start: s, end: runEnd, score: 0.85, source: 'merge' });
+                }
+            }
+        }
+        i = j + 1;
+    }
+    if (toRemove.size) {
+        for (let k = allFindings.length - 1; k >= 0; k--) {
+            if (toRemove.has(allFindings[k])) allFindings.splice(k, 1);
+        }
+    }
+    if (toAdd.length) allFindings.push(...toAdd);
 }
 
 // ============================================================
@@ -903,6 +980,8 @@ function detectLegalEntities(origText) {
         { regex: /(?:[İi]şlem)\s*(?:no|numaras[ıIi]?)\s*[:\-]?\s*([A-Z0-9][\w\-]{5,25})/gi, score: 0.85, entity: 'GOV_DOCUMENT_ID' },
         { regex: /(?:randevu)\s*(?:no|numaras[ıIi]?)\s*[:\-]?\s*([A-Z0-9][\w\-]{5,25})/gi, score: 0.85, entity: 'GOV_DOCUMENT_ID' },
         { regex: /(?:sözleşme\w*)\s*(?:no|numaras[ıIi]?)\s*[:\-]?\s*([A-Z0-9][\w\-]{5,25})/gi, score: 0.85, entity: 'GOV_DOCUMENT_ID' },
+        // Genel ticari referans alanları (dar allowlist — FP'den kaçınmak için)
+        { regex: /(?:s[İiı]par[İiı]ş|üye|abone|talep|tekl[İiı]f|[İiı]rsal[İiı]ye|makbuz|sevk[İiı]yat|teslimat|kargo|takip\s*kod)\s*(?:no|numaras[ıIi]?|kodu)\s*[:\-]?\s*([A-Z0-9][\w\-]{4,25})/gi, score: 0.8, entity: 'GOV_DOCUMENT_ID' },
         { regex: /(?:dekont)\s*(?:no|numaras[ıIi]?)\s*[:\-]?\s*([A-Z0-9][\w\-]{5,25})/gi, score: 0.85, entity: 'FINANCIAL_ID' },
         { regex: /\b((?:ABB|IBB|BLD|TPU|RND|ISL|TWB|SVS|DKT|KON|YRS|ISK|BEB|IMR|VTH|TIS|THH|SRV|ARZ|TLP|CMK|VIV|VRT|BYN|ICR)\-\d{4}\-\d{4,10})\b/g, score: 0.8, entity: 'GOV_DOCUMENT_ID' },
 
@@ -1223,7 +1302,7 @@ function detectLegalEntities(origText) {
     }
 
     // MERSİS number (labeled pattern)
-    const mersisRe = /(?:mers[İiı][sş])\s*(?:no|numaras[ıIi]?)\s*[:\-]?\s*(\d{16,17})/gi;
+    const mersisRe = /(?:mers[İiı][sş])\s*(?:no|numaras[ıIi]?)?\s*[:\-]?\s*(\d{16,17})/gi;
     let mm;
     while ((mm = mersisRe.exec(text)) !== null) {
         const val = mm[1];
@@ -1479,9 +1558,27 @@ function detectPersonalAttributes(origText, enabledEntities) {
     ]);
 
     // NATIONALITY — "uyruğu: T.C.", "Vatandaşlık\nTürkiye Cumhuriyeti"
+    // \b: "uyruk" kelimesinin "uyruklu" içine kaçıp "lu Hans..."'ı yakalamasını engeller
     runPatterns([
-        { regex: /(?:uyruk|uyru[ğg]u|tab[İiI][İiI]yet[İiI]?|tâb[İiI][İiI]yet[İiI]?|vatandaşl[ıIi][ğg][ıIi]?|vatandaşl[ıIi]k)\s*[:\-]?\s*[\n\r]?\s*([A-ZÇĞİÖŞÜa-zçğıöşü. ]{2,30}?)(?=\s*[\n,;]|$)/gi, score: 0.9, entity: 'NATIONALITY', minLen: 2 },
+        { regex: /(?:uyruk|uyru[ğg]u|tab[İiI][İiI]yet[İiI]?|tâb[İiI][İiI]yet[İiI]?|vatandaşl[ıIi][ğg][ıIi]?|vatandaşl[ıIi]k)(?![a-zçğıöşüâîû])\s*[:\-]?\s*[\n\r]?\s*([A-ZÇĞİÖŞÜa-zçğıöşü. ]{2,30}?)(?=\s*[\n,;]|$)/gi, score: 0.9, entity: 'NATIONALITY', minLen: 2 },
+        // "Alman uyruklu", "Fransız vatandaşı" — uyruk sıfatı anahtar kelimeden ÖNCE
+        { regex: /([A-ZÇĞİÖŞÜ][a-zçğıöşü]+(?:l[ıiuü])?)\s+(?:uyruklu|uyru[ğg]una|vatandaş[ıi]|tab[İiI][İiI]yet[İiI]nde|tebaas[ıi])\b/g, score: 0.85, entity: 'NATIONALITY', minLen: 2 },
     ]);
+
+    // Yabancı isim: "<uyruk> uyruklu/vatandaşı <Ad Soyad>" kalıbındaki ismi yakala
+    // (gazetteer'da olmayan Hans Müller, Jean Dupont gibi).
+    if (enabledEntities.has('PERSON_NAME')) {
+        const NAME_STOP = new Set(['davacı', 'davalı', 'şirket', 'firma', 'kişi', 'vatandaş', 'bir',
+            'müvekkil', 'taraf', 'olarak', 'sayın', 'isimli', 'adlı', 'olan', 'sanık', 'müşteki']);
+        const foreignNameRe = /(?:uyruklu|vatandaş[ıi]|tab[İiI][İiI]yet[İiI]nde|tebaas[ıi])\s+([A-ZÇĞİÖŞÜ][a-zçğıöşü]+(?:\s+[A-ZÇĞİÖŞÜ][a-zçğıöşü]+){0,2})/g;
+        let fm;
+        while ((fm = foreignNameRe.exec(text)) !== null) {
+            const nameVal = fm[1].trim();
+            if (NAME_STOP.has(trLower(nameVal.split(/\s+/)[0]))) continue;
+            const nameStart = fm.index + fm[0].indexOf(fm[1]);
+            findings.push({ entity: 'PERSON_NAME', value: nameVal, start: nameStart, end: nameStart + nameVal.length, score: 0.75, source: 'context' });
+        }
+    }
 
     // MARITAL_STATUS — "medeni hali: evli", "Medeni Durum\nEvli"
     runPatterns([
@@ -1505,12 +1602,12 @@ function detectPersonalAttributes(origText, enabledEntities) {
 
     // BARO_SICIL — "baro sicil no: 45872"
     runPatterns([
-        { regex: /(?:baro(?:su)?\s*(?:s[İiI]c[İiI]l|kayd[ıIi]))\s*(?:no|numaras[ıIi]?)?\s*[:\-]\s*(\d{3,10})/gi, score: 0.9, entity: 'BARO_SICIL' },
+        { regex: /(?:baro(?:su)?\s*(?:s[İiI]c[İiI]l|kayd[ıIi]))\s*(?:no|numaras[ıIi]?)?\s*[:\-]?\s*(\d{3,10})/gi, score: 0.9, entity: 'BARO_SICIL' },
     ]);
 
     // TRADE_REGISTRY_NO — "ticaret sicil no: 558412"
     runPatterns([
-        { regex: /(?:ticaret\s*sicil)\s*(?:no|numaras[ıIi]?)\s*[:\-]\s*(\d{3,15})/gi, score: 0.9, entity: 'TRADE_REGISTRY_NO' },
+        { regex: /(?:ticaret\s*sicil[İiı]?)\s*(?:no|numaras[ıIi]?)?\s*[:\-]?\s*(\d{3,15})/gi, score: 0.9, entity: 'TRADE_REGISTRY_NO' },
     ]);
 
     // SALARY_AMOUNT — "maaşı: 15.500 TL"
@@ -1523,6 +1620,10 @@ function detectPersonalAttributes(origText, enabledEntities) {
         const bloodPatterns = [
             /(?:kan\s*(?:grubu|tipi))\s*[:\-]\s*((?:AB|A|B|0)\s*Rh?\s*[+\-])/gi,
             /(?:kan\s*(?:grubu|tipi))\s*[:\-]\s*((?:AB|A|B|0)\s*[+\-])/gi,
+            // "Kan grubu A Rh pozitif" — kelime formu, iki nokta opsiyonel
+            /(?:kan\s*(?:grubu|tipi))\s*[:\-]?\s*((?:AB|A|B|0)\s*Rh\s*(?:pozitif|negatif))/gi,
+            // Etiketsiz: "A Rh pozitif", "AB Rh negatif"
+            /\b((?:AB|A|B|0)\s*Rh\s*(?:pozitif|negatif))\b/gi,
         ];
         for (const re of bloodPatterns) {
             const regex = new RegExp(re.source, re.flags);
@@ -1641,6 +1742,8 @@ function detectPersonalAttributes(origText, enabledEntities) {
     if (enabledEntities.has('DISABILITY_STATUS')) {
         const disabilityPatterns = [
             /(?:engel\s*(?:oran[ıIi]|durumu|türü|dereces[İiI])|sakatl[ıIi]k\s*(?:oran[ıIi]|durumu)|malul[İiI]yet\s*(?:oran[ıIi]|durumu|dereces[İiI]))\s*[:\-]\s*([^\n,;]{2,40}?)(?=\s*[,.\n;]|$)/gi,
+            // Ters sıra: "%40 oranında maluliyet/sakatlık/engel"
+            /(%\s?\d{1,3}(?:[.,]\d+)?)\s*oran[ıi]nda\s+(?:malul[İiı]yet|sakatl[ıi]k|engel)/gi,
         ];
         for (const re of disabilityPatterns) {
             const regex = new RegExp(re.source, re.flags);
@@ -1771,9 +1874,26 @@ function runDictionaryNER(text, enabledEntities, scoreThreshold) {
     }
 
     // Remove PERSON_NAME that acts as a field label (followed by ":" and then a number or label text)
+    const STREET_WORD = /(?:Caddes[İiı]|Cadde|Soka[ğg][İiı]|Sokak|Bulvar[İiı]?|Mahalles[İiı]|Mahalle|Sites[İiı]|Apartman[İiı]?|Köyü|Meydan[İiı])/;
     for (let i = allFindings.length - 1; i >= 0; i--) {
         const f = allFindings[i];
         if (f.entity === 'PERSON_NAME') {
+            // Sokak adı kişi sanılmış: değer sokak ekiyle bitiyor ("Bağdat Caddesi")
+            // ya da hemen ardından sokak eki geliyor ("Atatürk" + " Caddesi")
+            if (new RegExp('\\s' + STREET_WORD.source + '$').test(f.value)) {
+                allFindings.splice(i, 1);
+                continue;
+            }
+            const afterStreet = text.substring(f.end, Math.min(text.length, f.end + 14));
+            if (new RegExp('^[ \\t]+(?:' + STREET_WORD.source + '|Cad\\.|Sok\\.|Mah\\.|Blv\\.)\\b').test(afterStreet)) {
+                allFindings.splice(i, 1);
+                continue;
+            }
+            // Uyruk sıfatı kişi sanılmış: "Alman uyruklu", "Fransız vatandaşı"
+            if (/^[ \t]+(?:uyruklu|vatandaş[ıi]|tab[İiI][İiI]yet[İiI]nde|tebaas[ıi])\b/i.test(afterStreet)) {
+                allFindings.splice(i, 1);
+                continue;
+            }
             const after = text.substring(f.end, Math.min(text.length, f.end + 30));
             if (/^[ \t]*[:\-][ \t]*\n?\s*\d/.test(after)) {
                 allFindings.splice(i, 1);
@@ -1801,6 +1921,9 @@ function runDictionaryNER(text, enabledEntities, scoreThreshold) {
     // Label:Value scanner — detect PII after labeled fields ("Baba Adı: Hasan")
     const labelValueFindings = detectLabeledValues(text, allFindings, enabledEntities);
     allFindings.push(...labelValueFindings);
+
+    // Bitişik konum parçalarını tek ADDRESS bloğuna birleştir
+    mergeAddressFragments(allFindings, text, enabledEntities);
 
     return allFindings.filter(f => f.score >= scoreThreshold);
 }

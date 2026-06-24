@@ -1,5 +1,5 @@
 // NER Worker — runs regex/dictionary engine off the main thread
-importScripts('dictionaries.js?v=15.0', 'recognizers.js?v=15.0', 'ner-engine.js?v=15.0');
+importScripts('dictionaries.js?v=21.0', 'recognizers.js?v=21.0', 'ner-engine.js?v=21.0');
 
 self.onmessage = (e) => {
     const { type, text, enabledEntities, threshold, requestId } = e.data;

@@ -30,6 +30,9 @@ jobs:
             exit 1
           fi
 
+      - name: Run holdout (independent set, gated on recall/F1)
+        run: npm run holdout
+
   pages:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     needs: test
@@ -48,7 +51,7 @@ jobs:
       - name: Build dist
         run: |
           mkdir -p dist/lib
-          cp index.html style.css app.js anonymizer.js ner-engine.js ner-worker.js dictionaries.js recognizers.js dist/
+          cp index.html gizlilik.html THREAT_MODEL.md style.css app.js anonymizer.js ai-workflow.js prompts.js ner-engine.js ner-worker.js dictionaries.js recognizers.js dist/
           cp lib/*.js lib/*.mjs lib/*.wasm.js lib/*.traineddata dist/lib/
 
       - uses: actions/upload-pages-artifact@v3

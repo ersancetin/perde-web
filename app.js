@@ -109,6 +109,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const siteFooter = $('siteFooter');
     const mobileTabs = $('mobileTabs');
     const mobileTabCount = $('mobileTabCount');
+    const aiBtn = $('aiBtn');
+    const aiPanel = $('aiPanel');
+    const aiClose = $('aiClose');
+    const promptSelect = $('promptSelect');
+    const promptDesc = $('promptDesc');
+    const promptOutput = $('promptOutput');
+    const promptCopyBtn = $('promptCopyBtn');
+    const aiTokenInfo = $('aiTokenInfo');
+    const optParty = $('optParty');
+    const optLang = $('optLang');
+    const optExtra = $('optExtra');
+    const aiLegend = $('aiLegend');
+    const legendList = $('legendList');
+    const legendCount = $('legendCount');
+    const aiReview = $('aiReview');
+    const aiResponse = $('aiResponse');
+    const deanonBtn = $('deanonBtn');
+    const deanonResultStep = $('deanonResultStep');
+    const deanonOutput = $('deanonOutput');
+    const deanonWarn = $('deanonWarn');
+    const deanonStats = $('deanonStats');
+    const deanonCopyBtn = $('deanonCopyBtn');
 
     // Mobile tabs
     if (mobileTabs) {
@@ -186,6 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
         lastFindings = []; lastText = '';
         keptFindings.clear(); keptTypes.clear();
         hashCache.clear();
+        if (aiPanel) { aiPanel.style.display = 'none'; aiReverseMap.clear(); if (legendList) legendList.innerHTML = ''; }
         lastImageOnlyPages = [];
         lastPdfDoc = null; lastPdfLib = null; lastPdfPageTexts = []; ocrProcessed = false;
         if (scanWarning) scanWarning.style.display = 'none';
@@ -199,6 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
         lastFindings = [];
         keptFindings.clear(); keptTypes.clear();
         hashCache.clear();
+        if (aiPanel) { aiPanel.style.display = 'none'; aiReverseMap.clear(); if (legendList) legendList.innerHTML = ''; }
     }
 
     function showResults() {
@@ -539,6 +563,8 @@ document.addEventListener('DOMContentLoaded', () => {
         renderSummary(lastFindings);
         copyBtn.disabled = lastFindings.length === 0;
         downloadBtn.disabled = lastFindings.length === 0;
+        if (aiBtn) aiBtn.disabled = lastFindings.length === 0;
+        if (aiPanel && aiPanel.style.display !== 'none') refreshPrompt();
     }
 
     function renderSummary(findings) {
@@ -607,14 +633,29 @@ document.addEventListener('DOMContentLoaded', () => {
     function showScanWarning(imagePages, totalPages) {
         lastImageOnlyPages = imagePages;
         if (!scanWarning) return;
-        if (!imagePages.length) { scanWarning.style.display = 'none'; return; }
+        if (!imagePages.length) {
+            if (ocrProcessed) {
+                // Tüm sayfalar OCR ile okundu — kalite uyarısı göster
+                scanWarning.style.display = '';
+                scanWarning.innerHTML =
+                    '<svg width="16" height="16" viewBox="0 0 16 16" fill="#f59e0b"><path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/></svg>' +
+                    '<div class="scan-warning-body">' +
+                    '<div class="scan-warning-title">✓ OCR ile okundu — sonuçları kontrol edin</div>' +
+                    'OCR ile çıkarılan metin hatalı olabilir (düşük çözünürlük, el yazısı, tablolar). ' +
+                    'Bazı kişisel veriler yanlış okunmuş ve maskelenmemiş olabilir; çıktıyı mutlaka gözden geçirin.' +
+                    '</div>';
+            } else {
+                scanWarning.style.display = 'none';
+            }
+            return;
+        }
         const pageList = imagePages.length <= 5
             ? imagePages.join(', ')
             : imagePages.slice(0, 5).join(', ') + ' (+' + (imagePages.length - 5) + ')';
         scanWarning.style.display = '';
         const ocrBtn = lastPdfDoc && !ocrProcessed
             ? '<button id="ocrBtn" class="ocr-btn">OCR ile Oku</button>'
-            : (ocrProcessed ? '<span class="ocr-done">✓ OCR tamamlandı</span>' : '');
+            : (ocrProcessed ? '<span class="ocr-done">✓ OCR tamamlandı — OCR metni hatalı olabilir, kontrol edin</span>' : '');
         scanWarning.innerHTML =
             '<svg width="16" height="16" viewBox="0 0 16 16" fill="#f59e0b"><path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/></svg>' +
             '<div class="scan-warning-body">' +
@@ -770,6 +811,7 @@ document.addEventListener('DOMContentLoaded', () => {
         URL.revokeObjectURL(url);
     });
 
+    // Download detection report (JSON) — contains real PII, local only
     function getOutputText() {
         let text = '';
         outputText.childNodes.forEach(n => {
@@ -904,6 +946,170 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     inputText.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') analyzeBtn.click(); });
+
+    // ─── Yapay Zeka İş Akışı (anonimleştir → prompt → çöz) ───
+    let aiReverseMap = new Map(); // token -> orijinal değer (yalnızca bellekte)
+
+    // asciiToken / buildPseudonymized / deAnonymize artık ai-workflow.js'te
+    // (DOM-bağımsız, birim testli). Burada yalnızca çağrılırlar.
+
+    // Kullanıcı tercihlerinden ({{SECENEKLER}}) enjekte edilecek blok. Hiçbiri
+    // seçili değilse boş döner (placeholder temizce kaybolur).
+    function buildOptionsBlock() {
+        const lines = [];
+        if (optParty && optParty.value) {
+            lines.push('- Müvekkil tarafı: ' + optParty.value + ' (değerlendirmeyi ve talepleri bu taraf lehine kur).');
+        }
+        if (optLang && optLang.value) {
+            lines.push('- Yanıt dili: ' + optLang.value + ' (yanıtın tamamını bu dilde ver; ancak [KISI_1] gibi etiketleri ÇEVİRME, aynen bırak).');
+        }
+        if (optExtra && optExtra.value.trim()) {
+            lines.push('- Ek talimat: ' + optExtra.value.trim());
+        }
+        if (!lines.length) return '';
+        return '# KULLANICI TERCİHLERİ\n' + lines.join('\n');
+    }
+
+    function renderLegend(map) {
+        if (!legendList) return;
+        legendList.innerHTML = '';
+        if (legendCount) legendCount.textContent = '(' + map.size + ')';
+        for (const [token, value] of map) {
+            const row = document.createElement('div');
+            row.className = 'ai-legend-row';
+            const t = document.createElement('span');
+            t.className = 'ai-legend-token';
+            t.textContent = token;
+            const v = document.createElement('span');
+            v.className = 'ai-legend-val';
+            v.textContent = value;
+            row.appendChild(t); row.appendChild(v);
+            legendList.appendChild(row);
+        }
+    }
+
+    // Sade kontrol: yalnızca gerçekten açık (kept) veri varsa kırmızı tek satır uyarı.
+    // Aksi halde boş kalır (kutu gizlenir). Maskelenen tür/düşük güven/taranmış bilgisi
+    // sonuç özet çubuğunda zaten var; burada tekrarlanmaz.
+    function renderReview() {
+        if (!aiReview) return;
+        const rs = reviewSummary(lastFindings, isKept, FRIENDLY_LABELS, 0.5);
+        if (rs.openCount) {
+            aiReview.innerHTML = '<div class="ai-review-warn">⚠ ' + rs.openCount +
+                ' veri maskelenmeden açık gidecek: ' +
+                rs.openItems.slice(0, 6).map(o => '<b>' + escapeHTML(o.value) + '</b>').join(', ') +
+                (rs.openCount > 6 ? '…' : '') +
+                ' — Tespitler\'den maskeleyebilirsiniz.</div>';
+        } else {
+            aiReview.innerHTML = '';
+        }
+    }
+
+    function refreshPrompt() {
+        if (!lastFindings.length) return;
+        const { text, map } = buildPseudonymized(lastText, lastFindings, isKept, FRIENDLY_LABELS, ENTITY_LABELS);
+        aiReverseMap = map;
+        const p = LEGAL_PROMPTS.find(x => x.id === promptSelect.value) || LEGAL_PROMPTS[0];
+        promptDesc.textContent = p.desc;
+        promptOutput.value = p.body
+            .replace('{{SECENEKLER}}', buildOptionsBlock())
+            .replace('{{BELGE}}', text);
+        renderLegend(map);
+        renderReview();
+        aiTokenInfo.textContent = map.size + ' veri maskelendi';
+    }
+
+    function openAiPanel() {
+        if (!lastFindings.length) return;
+        if (!promptSelect.options.length) {
+            // Kategoriye göre optgroup'larla doldur
+            const byCat = {};
+            LEGAL_PROMPTS.forEach(p => { (byCat[p.category] = byCat[p.category] || []).push(p); });
+            const catKeys = (typeof PROMPT_CATEGORIES !== 'undefined') ? Object.keys(PROMPT_CATEGORIES) : Object.keys(byCat);
+            catKeys.forEach(cat => {
+                if (!byCat[cat]) return;
+                const og = document.createElement('optgroup');
+                og.label = (typeof PROMPT_CATEGORIES !== 'undefined' && PROMPT_CATEGORIES[cat]) || cat;
+                byCat[cat].forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p.id; opt.textContent = p.name;
+                    og.appendChild(opt);
+                });
+                promptSelect.appendChild(og);
+            });
+        }
+        aiPanel.style.display = '';
+        deanonResultStep.style.display = 'none';
+        aiResponse.value = '';
+        if (aiLegend) aiLegend.open = false;
+        refreshPrompt();
+        aiPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function closeAiPanel() {
+        aiPanel.style.display = 'none';
+        aiReverseMap.clear();
+        aiResponse.value = '';
+        deanonOutput.textContent = '';
+        deanonResultStep.style.display = 'none';
+        if (legendList) legendList.innerHTML = '';
+        if (aiLegend) aiLegend.open = false;
+    }
+
+    if (aiBtn) aiBtn.addEventListener('click', () => {
+        if (aiPanel.style.display === 'none') openAiPanel(); else closeAiPanel();
+    });
+    if (aiClose) aiClose.addEventListener('click', closeAiPanel);
+    if (promptSelect) promptSelect.addEventListener('change', refreshPrompt);
+    if (optParty) optParty.addEventListener('change', refreshPrompt);
+    if (optLang) optLang.addEventListener('change', refreshPrompt);
+    if (optExtra) optExtra.addEventListener('input', refreshPrompt);
+
+    if (promptCopyBtn) promptCopyBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(promptOutput.value).then(() => {
+            promptCopyBtn.textContent = 'Kopyalandı ✓';
+            setTimeout(() => { promptCopyBtn.textContent = 'Promptu Kopyala'; }, 1200);
+        });
+    });
+
+    if (deanonBtn) deanonBtn.addEventListener('click', () => {
+        const txt = aiResponse.value;
+        if (!txt.trim()) { aiResponse.focus(); return; }
+        if (!aiReverseMap.size) { refreshPrompt(); }
+        const r = deAnonymize(txt, aiReverseMap);
+        deanonOutput.textContent = r.text;
+        deanonResultStep.style.display = '';
+
+        // Ana istatistik: kaç etiket geri çevrildi. Cevapta hiç geçmeyen
+        // etiketler (missed) normaldir — YZ her veriye atıf yapmak zorunda değil.
+        const absent = r.missed.length;
+        deanonStats.textContent = r.resolved + ' etiket çözüldü' + (absent ? ' · ' + absent + ' kullanılmamış' : '');
+
+        // Gerçek uyarı yalnızca çözülemeyen Perde-token kaldıysa: YZ token'ı bozmuş demektir.
+        const stray = [...new Set(r.leftover)];
+        if (stray.length) {
+            deanonWarn.style.display = '';
+            deanonWarn.className = 'ai-warn';
+            deanonWarn.innerHTML = '⚠ Yapay zeka şu etiketleri tanınmaz hale getirmiş ve geri çevrilemedi: <b>' +
+                stray.slice(0, 8).map(escapeHTML).join(', ') + (stray.length > 8 ? '…' : '') +
+                '</b>. Bu kişisel verileri elle düzeltmeniz veya istemi tekrar çalıştırmanız gerekir.';
+        } else if (absent && r.resolved === 0) {
+            // Hiçbir etiket çözülmedi — büyük ihtimalle yanlış metin yapıştırıldı veya YZ tüm etiketleri bozdu.
+            deanonWarn.style.display = '';
+            deanonWarn.className = 'ai-warn ai-warn-soft';
+            deanonWarn.innerHTML = 'Hiçbir etiket bulunamadı. Doğru cevabı yapıştırdığınızdan ve etiketlerin ([KISI_1] gibi) korunduğundan emin olun.';
+        } else {
+            deanonWarn.style.display = 'none';
+        }
+        deanonResultStep.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+
+    if (deanonCopyBtn) deanonCopyBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(deanonOutput.textContent).then(() => {
+            deanonCopyBtn.textContent = 'Tamam';
+            setTimeout(() => { deanonCopyBtn.textContent = 'Kopyala'; }, 1000);
+        });
+    });
 
     // ─── Manual selection masking ───
     const MANUAL_TYPES = ['PERSON_NAME','TR_NATIONAL_ID','CASE_NUMBER','ADDRESS','PHONE_NUMBER','DATE_TIME','ORGANIZATION','MONETARY_AMOUNT','MANUAL'];

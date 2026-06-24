@@ -6994,6 +6994,259 @@ expect('EHLİYET NO: B-2008-123456', 'DRIVER_LICENSE', 'B-2008-123456');
 expect('ŞASİ NO: 1G1YY22G965118362', 'VEHICLE_ID', '1G1YY22G965118362');
 
 // ============================================================
+// HOLDOUT-DRIVEN ENGINE FIXES (regresyon kalkanı)
+// ============================================================
+
+console.log('\n--- Holdout-Driven Fixes ---');
+
+// IBAN içine düşen kredi kartı bastırılmalı; IBAN tespit edilmeli
+expect('Ödemenin TR61 0001 0000 1745 6789 0123 45 hesabına yapılması', 'IBAN_CODE', 'TR61 0001 0000 1745 6789 0123 45');
+expectNot('Ödemenin TR61 0001 0000 1745 6789 0123 45 hesabına yapılması', 'CREDIT_CARD');
+expect('kiracının TR75 0006 1019 7864 5784 1326 00 IBAN numaralı hesaba', 'IBAN_CODE', 'TR75 0006 1019 7864 5784 1326 00');
+expectNot('kiracının TR75 0006 1019 7864 5784 1326 00 IBAN numaralı hesaba', 'CREDIT_CARD');
+// Bağımsız kredi kartı HÂLÂ tespit edilmeli (regresyon)
+expect('Kart numarası 4111 1111 1111 1111 ile ödeme yapıldı', 'CREDIT_CARD', '4111 1111 1111 1111');
+
+// BLOOD_TYPE — kelime formu (pozitif/negatif), etiketli ve etiketsiz
+expect('Kan grubu A Rh pozitif olup tedavi uygulandı', 'BLOOD_TYPE', 'A Rh pozitif');
+expect('Hastanın kan grubu B Rh negatif olarak kaydedildi', 'BLOOD_TYPE', 'B Rh negatif');
+expect('Kan Grubu: AB Rh+', 'BLOOD_TYPE', 'AB Rh+');
+
+// DISABILITY — ters sıra "%40 oranında maluliyet"
+expect('Olayda %40 oranında maluliyet oluşmuştur', 'DISABILITY_STATUS', '%40');
+expect('İşçide %25 oranında sakatlık tespit edildi', 'DISABILITY_STATUS', '%25');
+// FP kalkanı: maluliyet/sakatlık bağlamı olmayan yüzde DISABILITY olmamalı
+expectNot('Şirketin kâr oranı %40 oranında arttı', 'DISABILITY_STATUS');
+
+// PERSON_NAME — gazetteer'a eklenen "Okan" / "Caner"
+expect('Müşteki Okan Polat ifade verdi', 'PERSON_NAME', 'Okan');
+expect('İşçi Caner Doğan işe başlamıştır', 'PERSON_NAME', 'Caner');
+
+// MERSİS — "No" olmadan da yakalanmalı (varyant)
+expect('Şirketin MERSİS: 9988776655443322 numarasıdır', 'TR_MERSIS_NO', '9988776655443322');
+expect('MERSİS No: 0123456789012345 kayıtlıdır', 'TR_MERSIS_NO', '0123456789012345');
+
+// Genel ticari referans no — yakalanmalı (Sipariş/Üye/Teklif)
+expect('Sipariş Numarası: SP240611 onaylandı', 'GOV_DOCUMENT_ID', 'SP240611');
+expect('Üye No: UYE7788 ile giriş', 'GOV_DOCUMENT_ID', 'UYE7788');
+expect('Teklif No: TKF-2024-55 sunuldu', 'GOV_DOCUMENT_ID', 'TKF-2024-55');
+// FP kalkanı: hukuki/yapısal "no" alanları PII değil
+expectNot('Madde No: 5 uyarınca', 'GOV_DOCUMENT_ID', '5');
+expectNot('Sayfa No: 12 incelenmeli', 'GOV_DOCUMENT_ID', '12');
+
+// Adres bloğu birleştirme: bitişik konum parçaları tek ADDRESS olmalı
+expect('Müvekkil Cumhuriyet Caddesi No:88 Çankaya/Ankara adresinde oturur', 'ADDRESS', 'Cumhuriyet Caddesi No:88 Çankaya/Ankara');
+expect('Kaza Yeri: Filistin Cad. Çankaya/Ankara olarak tespit edildi', 'ADDRESS', 'Filistin Cad. Çankaya/Ankara');
+// Rol kelimesi over-capture'ı: "Davacı" adres parçasına dahil edilmemeli
+expectNot('Davacı Bağdat Caddesi No:45 Kadıköy adresinde', 'LOCATION', 'Davacı Bağdat');
+// Over-merge kalkanı: cümleyle ayrılmış iki şehir birleşmemeli (ayrı LOCATION)
+expect('Dava İstanbul ilinde açıldı, karar Ankara ilinde verildi', 'LOCATION', 'İstanbul');
+expectNot('Dava İstanbul ilinde açıldı, karar Ankara ilinde verildi', 'ADDRESS', 'İstanbul ilinde açıldı');
+
+// Sokak adı kişi sanılmamalı (street suffix'ten önceki PERSON bastırılır)
+expectNot('Bağdat Caddesi No:45 adresinde oturur', 'PERSON_NAME', 'Bağdat');
+expectNot('Atatürk Bulvarı üzerinde bulunan bina', 'PERSON_NAME', 'Atatürk');
+expect('Müvekkil Ahmet Yılmaz beyan etti', 'PERSON_NAME', 'Ahmet Yılmaz'); // gerçek kişi korunur
+// Pasaport (1 harf + 8 rakam)
+expect('Pasaport numarası U12345678 ile giriş yaptı', 'TR_PASAPORT', 'U12345678');
+// Ticaret sicili — "No" olmadan
+expect('Ankara Ticaret Sicili 456789 numarasında kayıtlı', 'TRADE_REGISTRY_NO', '456789');
+// Noter — tek kelimeli ("Konak Noterliği")
+expect('İşlem Konak Noterliğinde yapıldı', 'NOTARY', 'Konak Noterliği');
+// ORG — "Şirketimiz" önekli + tam suffix zinciri
+expect('Şirketimiz Parlak Ambalaj San. Tic. Ltd. Şti. tarafından', 'ORGANIZATION', 'Parlak Ambalaj San. Tic. Ltd. Şti.');
+expectNot('Şirketimiz Parlak Ambalaj San. Tic. Ltd. Şti. tarafından', 'ORGANIZATION', 'Şirketimiz Parlak');
+// Baro sicil — "No" olmadan da BARO_SICIL (LICENSE_ID değil)
+expect('baro sicil no 28456 ile kayıtlı avukat', 'BARO_SICIL', '28456');
+
+// Adres bloğu "İletişim:"te durmalı — telefon/e-posta yutulmamalı
+expect('Adresi: Gül Mah. Lale Sok. No:5 Çankaya/Ankara. İletişim: 0532 111 22 33', 'PHONE_NUMBER', '0532 111 22 33');
+expectNot('Adresi: Gül Mah. Lale Sok. No:5 Çankaya/Ankara. İletişim: 0532 111 22 33', 'ADDRESS', 'İletişim');
+
+// Yabancı uyruk/isim: "Alman uyruklu Hans Müller"
+expect('Davacı Alman uyruklu Hans Müller başvurdu', 'NATIONALITY', 'Alman');
+expect('Davacı Alman uyruklu Hans Müller başvurdu', 'PERSON_NAME', 'Hans Müller');
+expectNot('Davacı Alman uyruklu Hans Müller başvurdu', 'PERSON_NAME', 'Alman'); // uyruk, kişi değil
+expect('İngiliz vatandaşı John Smith ifade verdi', 'PERSON_NAME', 'John Smith');
+// Türkçe \b sorunu kalkanı: "Vatandaşlığı: Suriye" hâlâ çalışmalı
+expect('Vatandaşlığı: Suriye', 'NATIONALITY', 'Suriye');
+expect('Uyruğu: Alman', 'NATIONALITY', 'Alman');
+
+// FP azaltma: hukuki/genel "birliği" kavramı ORG olmamalı; gerçek birlik kalmalı
+expectNot('Evlilik birliği temelinden sarsılmıştır', 'ORGANIZATION', 'Evlilik birliği');
+expectNot('Taraflar iş birliği yapmıştır', 'ORGANIZATION', 'iş birliği');
+expect('Türkiye Barolar Birliği kararı uyarınca', 'ORGANIZATION', 'Türkiye Barolar Birliği');
+// FP azaltma: "internet sitesi" / bare "sitesi" LOCATION olmamalı; gerçek site kalmalı
+expectNot('İnternet sitesinden 32.999 TL ürün aldım', 'LOCATION', 'sitesi');
+expectNot('web sitesinden sipariş verdim', 'LOCATION', 'sitesi');
+expect('Yeşil Vadi Sitesi B Blok adresinde oturuyor', 'LOCATION', 'Yeşil Vadi Sitesi');
+// Over-capture: adres öncesi küçük harf dolgu kelime yutulmamalı
+expectNot('Maliki bulunduğum Bağlarbaşı Mahallesinde', 'LOCATION', 'Maliki bulunduğum');
+// COURT değeri kaynak metnin birebir alt dizisi olmalı ("Başsavcılığı" boşluksuz)
+expect('BAKIRKÖY CUMHURİYET BAŞSAVCILIĞINA başvurdum', 'COURT', 'BAŞSAVCILIĞI');
+expectNot('BAKIRKÖY CUMHURİYET BAŞSAVCILIĞINA başvurdum', 'COURT', 'BAŞ SAVCILIĞI');
+
+// ============================================================
+// AI WORKFLOW TESTS (ai-workflow.js + prompts.js)
+// ============================================================
+
+console.log('\n--- AI Workflow Tests ---');
+
+const { asciiToken, buildPseudonymized, deAnonymize } = require(__dirname + '/ai-workflow.js');
+
+function checkAI(cond, label) {
+    total++;
+    if (cond) { pass++; } else { fail++; console.log('  FAIL (AI): ' + label); }
+}
+
+// asciiToken: Türkçe -> AI-güvenli ASCII taban
+checkAI(asciiToken('Kişi') === 'KISI', 'asciiToken Kişi->KISI');
+checkAI(asciiToken('Kredi Kartı') === 'KREDI_KARTI', 'asciiToken Kredi Kartı->KREDI_KARTI');
+checkAI(asciiToken('TC Kimlik') === 'TC_KIMLIK', 'asciiToken TC Kimlik->TC_KIMLIK');
+checkAI(asciiToken('Yargı Atfı') === 'YARGI_ATFI', 'asciiToken Yargı Atfı->YARGI_ATFI');
+
+const AIWF_FL = { PERSON_NAME: 'Kişi', DATE_TIME: 'Tarih', CONTEXTUAL_DATE: 'Tarih', ORGANIZATION: 'Kurum' };
+function aiwfFindAt(text, val, from) { const i = text.indexOf(val, from || 0); return { start: i, end: i + val.length }; }
+
+// buildPseudonymized: aynı değer -> aynı token, çakışan taban -> benzersiz numara, kept -> açık
+{
+    const text = 'Ahmet, 01.01.2020 ve 02.02.2021. Ahmet geldi. Kurum: ACME.';
+    const p1 = aiwfFindAt(text, 'Ahmet'); const p2 = aiwfFindAt(text, '01.01.2020');
+    const p3 = aiwfFindAt(text, '02.02.2021'); const p4 = aiwfFindAt(text, 'Ahmet', p1.end);
+    const p5 = aiwfFindAt(text, 'ACME');
+    const findings = [
+        { entity: 'PERSON_NAME', value: 'Ahmet', start: p1.start, end: p1.end, score: 0.9 },
+        { entity: 'DATE_TIME', value: '01.01.2020', start: p2.start, end: p2.end, score: 0.9 },
+        { entity: 'CONTEXTUAL_DATE', value: '02.02.2021', start: p3.start, end: p3.end, score: 0.9 },
+        { entity: 'PERSON_NAME', value: 'Ahmet', start: p4.start, end: p4.end, score: 0.9 },
+        { entity: 'ORGANIZATION', value: 'ACME', start: p5.start, end: p5.end, score: 0.9 },
+    ];
+    const res = buildPseudonymized(text, findings, () => false, AIWF_FL, ENTITY_LABELS);
+    checkAI((res.text.match(/\[KISI_1\]/g) || []).length === 2, 'aynı değer aynı token (KISI_1 iki kez)');
+    checkAI(res.map.has('[TARIH_1]') && res.map.has('[TARIH_2]'), 'çakışan taban benzersiz numaralanır');
+    checkAI(res.map.get('[TARIH_1]') !== res.map.get('[TARIH_2]'), 'iki tarih farklı değere eşlenir');
+    checkAI(res.map.size === 4, 'benzersiz token sayısı 4');
+    const res2 = buildPseudonymized(text, findings, (i) => i === 4, AIWF_FL, ENTITY_LABELS);
+    checkAI(res2.text.includes('ACME') && !res2.text.includes('[KURUM_1]'), 'korunan (kept) bulgu token\'lanmaz');
+}
+
+// deAnonymize: tolerans (boşluk/harf/ayraç), çakışma yok, $ güvenli
+{
+    const map = new Map([
+        ['[KISI_1]', 'Ahmet Yılmaz'], ['[KISI_2]', 'Ayşe Demir'], ['[KISI_10]', 'Mehmet Öz'],
+        ['[TC_KIMLIK_1]', '12345678901'], ['[NOT_1]', 'A$B&C'],
+    ]);
+    const ai = 'Sayın [KISI_1], [ KISI_2 ] ve [kisi 10]. Kimlik [TC-KIMLIK-1]. Yine [KISI_1]. Kod: [NOT_1].';
+    const r = deAnonymize(ai, map);
+    checkAI((r.text.match(/Ahmet Yılmaz/g) || []).length === 2, 'tekrar eden token tüm geçişlerde çözülür');
+    checkAI(r.text.includes('Ayşe Demir'), 'boşluklu [ KISI_2 ] çözülür');
+    checkAI(r.text.includes('Mehmet Öz'), 'küçük harf [kisi 10] çözülür (KISI_1 onu yemez)');
+    checkAI(r.text.includes('12345678901'), 'tireli [TC-KIMLIK-1] çözülür');
+    checkAI(r.text.includes('A$B&C'), '$ ve & içeren değer güvenli yerleşir');
+    checkAI(r.leftover.length === 0, 'geçerli cevapta çözülemeyen etiket kalmaz');
+}
+
+// deAnonymize uyarı mantığı: stray (bozuk) vs missed (geçmeyen)
+{
+    const map = new Map([['[KISI_1]', 'Ahmet'], ['[KISI_2]', 'Mehmet']]);
+    const ai = 'Yalnızca [KISI_1] geçiyor. Ama [PERSON_99] bozuk bir etiket.';
+    const r = deAnonymize(ai, map);
+    checkAI(r.resolved === 1, 'bir token çözüldü');
+    checkAI(r.missed.length === 1 && r.missed[0] === '[KISI_2]', 'cevapta geçmeyen token missed sayılır');
+    checkAI(r.leftover.length === 1 && r.leftover[0] === '[PERSON_99]', 'bozuk/uydurma token leftover olarak yakalanır');
+}
+
+// Edge: token sırası değişirse (YZ token'ları farklı sırada kullanırsa)
+{
+    const map = new Map([['[KISI_1]', 'Ahmet'], ['[KISI_2]', 'Mehmet'], ['[KISI_3]', 'Ayşe']]);
+    const ai = 'Önce [KISI_3], sonra [KISI_1], en son [KISI_2] konuştu.';
+    const r = deAnonymize(ai, map);
+    checkAI(r.text === 'Önce Ayşe, sonra Ahmet, en son Mehmet konuştu.', 'token sırası değişse de doğru çözülür');
+    checkAI(r.resolved === 3 && r.leftover.length === 0, 'sıra bağımsız: hepsi çözülür');
+}
+
+// Edge: YZ token'ı küçük harfe çevirirse
+{
+    const map = new Map([['[KISI_1]', 'Ahmet Yılmaz'], ['[TC_KIMLIK_1]', '12345678901']]);
+    const r = deAnonymize('sayın [kisi_1], kimlik [tc_kimlik_1] doğrulandı', map);
+    checkAI(r.text.includes('Ahmet Yılmaz') && r.text.includes('12345678901'), 'küçük harfe çevrilen token çözülür');
+    checkAI(r.resolved === 2, 'küçük harf: tüm tokenlar çözülür');
+}
+
+// Edge: aynı gerçek değer birden çok entity tipinde geçerse → farklı token, ikisi de round-trip
+{
+    const text = 'Ankara ilinde, Ankara Ltd. firması faaliyet gösterir.';
+    const f = [
+        { entity: 'LOCATION', value: 'Ankara', start: 0, end: 6, score: 0.9 },
+        { entity: 'ORGANIZATION', value: 'Ankara', start: 15, end: 21, score: 0.9 },
+    ];
+    const res = buildPseudonymized(text, f, () => false, { LOCATION: 'Konum', ORGANIZATION: 'Kurum' }, ENTITY_LABELS);
+    checkAI(res.map.size === 2, 'aynı değer iki tipte → iki farklı token');
+    const toks = [...res.map.keys()];
+    checkAI(toks[0] !== toks[1] && res.map.get(toks[0]) === 'Ankara' && res.map.get(toks[1]) === 'Ankara', 'iki token da aynı gerçek değere döner');
+    const back = deAnonymize(res.text, res.map);
+    checkAI(back.text === text && back.leftover.length === 0, 'çok-tipli aynı değer tam round-trip');
+}
+
+// Edge: cevapta sadece bazı tokenlar kullanılırsa → kalanlar missed (uyarı değil), leftover yok
+{
+    const map = new Map([['[KISI_1]', 'Ahmet'], ['[KISI_2]', 'Mehmet'], ['[ADRES_1]', 'X Cad. 5'], ['[IBAN_1]', 'TR..']]);
+    const r = deAnonymize('Dilekçede yalnızca [KISI_1] geçmektedir.', map);
+    checkAI(r.resolved === 1 && r.missed.length === 3, 'kısmi kullanım: 1 çözülür, 3 missed');
+    checkAI(r.leftover.length === 0, 'kısmi kullanım stray üretmez (missed ≠ uyarı)');
+}
+
+// prompts.js bütünlüğü
+{
+    const { LEGAL_PROMPTS, PROMPT_CATEGORIES } = require(__dirname + '/prompts.js');
+    checkAI(LEGAL_PROMPTS.length >= 12, 'en az 12 prompt var');
+    const allValid = LEGAL_PROMPTS.every(p =>
+        p.id && p.category && p.name && PROMPT_CATEGORIES[p.category] &&
+        p.body.split('{{BELGE}}').length === 2 &&
+        p.body.split('{{SECENEKLER}}').length === 2 &&
+        p.body.includes('ETİKETLERE DOKUNMA'));
+    checkAI(allValid, 'tüm promptlarda placeholder + korkuluk + geçerli kategori var');
+    const ids = new Set(LEGAL_PROMPTS.map(p => p.id));
+    checkAI(ids.size === LEGAL_PROMPTS.length, 'prompt id\'leri benzersiz');
+}
+
+// reviewSummary — son kontrol özeti (maskelenen tür / açık veri / düşük güven)
+{
+    const { reviewSummary } = require(__dirname + '/ai-workflow.js');
+    const FL = { PERSON_NAME: 'Kişi', DATE_TIME: 'Tarih', LEGAL_CITATION: 'Yargı Atfı' };
+    const findings = [
+        { entity: 'PERSON_NAME', value: 'Ahmet', score: 0.9 },
+        { entity: 'PERSON_NAME', value: 'Mehmet', score: 0.4 },   // düşük güven
+        { entity: 'DATE_TIME', value: '01.01.2020', score: 0.95 },
+        { entity: 'LEGAL_CITATION', value: 'Yargıtay 2019/1', score: 0.8 }, // kept
+    ];
+    const kept = new Set([3]);
+    const rs = reviewSummary(findings, (i) => kept.has(i), FL);
+    checkAI(rs.maskedCount === 3 && rs.openCount === 1, 'son kontrol: 3 maskelenecek, 1 açık');
+    checkAI(rs.openItems[0].value === 'Yargıtay 2019/1', 'açık veri listesi doğru');
+    checkAI(rs.lowCount === 1, 'düşük güven sayısı doğru');
+    const kisi = rs.masked.find(m => m.label === 'Kişi');
+    checkAI(kisi && kisi.count === 2, 'maskelenen tür dökümü: Kişi ×2');
+}
+
+// buildReport — JSON ve TXT tespit raporu
+{
+    const { buildReport } = require(__dirname + '/ai-workflow.js');
+    const FL = { PERSON_NAME: 'Kişi' };
+    const findings = [
+        { entity: 'PERSON_NAME', value: 'Ahmet', score: 0.9 },
+        { entity: 'PERSON_NAME', value: 'Mehmet', score: 0.8 },
+    ];
+    const kept = new Set([1]);
+    const json = JSON.parse(buildReport(findings, (i) => kept.has(i), FL, 'json'));
+    checkAI(json.total === 2 && json.masked === 1 && json.kept === 1, 'JSON rapor sayıları doğru');
+    checkAI(json.findings[0].value === 'Ahmet' && json.findings[0].masked === true, 'JSON rapor içeriği doğru');
+    checkAI(typeof json.warning === 'string' && json.warning.length > 0, 'JSON rapor gizlilik uyarısı içerir');
+    const txt = buildReport(findings, (i) => kept.has(i), FL, 'txt');
+    checkAI(txt.includes('[MASKELENECEK] Kişi: Ahmet') && txt.includes('[KORUNACAK]') && txt.includes('UYARI'), 'TXT rapor formatı doğru');
+}
+
+// ============================================================
 // RESULTS
 // ============================================================
 

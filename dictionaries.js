@@ -60,7 +60,7 @@ const TR_FIRST_NAMES = new Set([
     'emre', 'can', 'berk', 'cem', 'deniz', 'ege', 'kerem', 'burak', 'onur',
     'serkan', 'volkan', 'hakan', 'tolga', 'sinan', 'barış', 'kaan', 'tarık',
     'erdem', 'eren', 'arda', 'furkan', 'berke', 'utku', 'doruk', 'alp', 'efe',
-    'baran', 'tuna', 'umut', 'koray', 'ilker', 'cenk', 'ozan', 'kağan', 'engin',
+    'baran', 'tuna', 'umut', 'koray', 'ilker', 'cenk', 'ozan', 'kağan', 'engin', 'okan', 'caner',
     'altan', 'çağlar', 'ersin', 'gürkan', 'polat', 'soner', 'yiğit', 'batuhan',
     'berkay', 'emir', 'mert', 'kıvanç', 'taner', 'taylan', 'görkem', 'atakan',
     'ersan', 'cihan', 'göksel', 'aykut', 'ayhan', 'bülent', 'cüneyt', 'ertuğrul', 'ilkay',

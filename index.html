@@ -7,7 +7,7 @@
     <meta name="referrer" content="no-referrer">
     <title>Perde Web</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='4' y='14' width='24' height='16' rx='3' fill='%231a1917'/><path d='M10 14V10a6 6 0 0 1 12 0v4' fill='none' stroke='%231a1917' stroke-width='3' stroke-linecap='round'/><circle cx='16' cy='22' r='2.5' fill='%23fff'/></svg>">
-    <link rel="stylesheet" href="style.css?v=17.1">
+    <link rel="stylesheet" href="style.css?v=22.0">
 </head>
 <body>
     <header>
@@ -128,7 +128,7 @@
     </main>
 
     <footer class="site-footer" id="siteFooter">
-        <span>by <a href="https://linkedin.com/in/ersan-cetin" target="_blank" rel="noopener">Ersan Cetin</a></span>
+        <span><a href="gizlilik.html">Gizlilik ve Güvenlik</a> · by <a href="https://linkedin.com/in/ersan-cetin" target="_blank" rel="noopener">Ersan Cetin</a></span>
     </footer>
 
     <div id="resultsView" style="display:none;">
@@ -171,7 +171,8 @@
                         </select>
                     </div>
                     <div class="output-header-right">
-                        <button id="downloadBtn" class="btn-text" disabled aria-label="TXT olarak indir">TXT</button>
+                        <button id="aiBtn" class="btn-text btn-ai" disabled aria-label="Yapay zeka ile kullan">✦ Yapay Zeka</button>
+                        <button id="downloadBtn" class="btn-text" disabled aria-label="Anonim metni TXT olarak indir">TXT</button>
                         <button id="copyBtn" class="btn-text" disabled>Kopyala</button>
                     </div>
                 </div>
@@ -180,13 +181,90 @@
                 <div class="output-hint mobile-hint">Metni seçerek maskeleyin</div>
             </div>
         </div>
+
+        <div id="aiPanel" class="ai-panel" style="display:none;">
+            <div class="ai-panel-head">
+                <div class="ai-panel-title">✦ Yapay Zeka İş Akışı</div>
+                <button id="aiClose" class="btn-text" aria-label="Kapat">✕</button>
+            </div>
+            <p class="ai-panel-intro">Yalnızca <b>anonim</b> metin kopyalanır; eşleştirme bu sekmede kalır. Göndermeden önce metni kontrol edin.</p>
+
+            <div class="ai-steps">
+                <div class="ai-step">
+                    <div class="ai-step-head"><span class="ai-step-num">1</span> Prompt</div>
+                    <select id="promptSelect" class="ai-select" aria-label="Prompt türü"></select>
+                    <div id="promptDesc" class="ai-prompt-desc"></div>
+
+                    <textarea id="promptOutput" class="ai-textarea" rows="12" aria-label="Yapay zekaya gönderilecek prompt (düzenlenebilir)"></textarea>
+
+                    <div class="ai-review" id="aiReview"></div>
+
+                    <details class="ai-adv" id="aiAdv">
+                        <summary>Uyarla</summary>
+                        <div class="ai-options">
+                            <div class="ai-option">
+                                <label for="optParty">Müvekkil tarafı</label>
+                                <select id="optParty">
+                                    <option value="">Belirtilmedi</option>
+                                    <option value="Davacı">Davacı</option>
+                                    <option value="Davalı">Davalı</option>
+                                </select>
+                            </div>
+                            <div class="ai-option">
+                                <label for="optLang">Yanıt dili</label>
+                                <select id="optLang">
+                                    <option value="">Türkçe</option>
+                                    <option value="İngilizce">İngilizce</option>
+                                </select>
+                            </div>
+                            <div class="ai-option ai-option-grow">
+                                <label for="optExtra">Ek talimat</label>
+                                <input type="text" id="optExtra" placeholder="örn. kısa ve maddeler hâlinde olsun">
+                            </div>
+                        </div>
+                    </details>
+
+                    <details class="ai-adv" id="aiLegend">
+                        <summary>Etiket sözlüğü <span id="legendCount" class="legend-count"></span></summary>
+                        <div class="ai-legend-note">Yalnızca sizde görünür; yapay zekaya gönderilmez, kopyalanmaz.</div>
+                        <div id="legendList" class="ai-legend-list"></div>
+                    </details>
+
+                    <div class="ai-step-actions">
+                        <span id="aiTokenInfo" class="ai-token-info"></span>
+                        <button id="promptCopyBtn" class="btn-primary btn-sm">Kopyala</button>
+                    </div>
+                </div>
+
+                <div class="ai-step">
+                    <div class="ai-step-head"><span class="ai-step-num">2</span> Cevabı yapıştır</div>
+                    <textarea id="aiResponse" class="ai-textarea" rows="8" placeholder="ChatGPT / Claude / Gemini cevabını buraya yapıştırın..." aria-label="Yapay zeka cevabı"></textarea>
+                    <div class="ai-step-actions">
+                        <span></span>
+                        <button id="deanonBtn" class="btn-primary btn-sm">Gerçek Verilere Çevir</button>
+                    </div>
+                </div>
+
+                <div class="ai-step" id="deanonResultStep" style="display:none;">
+                    <div class="ai-step-head"><span class="ai-step-num">3</span> Sonuç</div>
+                    <div id="deanonWarn" class="ai-warn" style="display:none;"></div>
+                    <div id="deanonOutput" class="output-area ai-output" aria-live="polite"></div>
+                    <div class="ai-step-actions">
+                        <span id="deanonStats" class="ai-token-info"></span>
+                        <button id="deanonCopyBtn" class="btn-text">Kopyala</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="lib/jszip.min.js"></script>
-    <script src="dictionaries.js?v=15.0"></script>
-    <script src="recognizers.js?v=15.0"></script>
-    <script src="ner-engine.js?v=15.0"></script>
+    <script src="dictionaries.js?v=21.0"></script>
+    <script src="recognizers.js?v=21.0"></script>
+    <script src="ner-engine.js?v=21.0"></script>
     <script src="anonymizer.js?v=15.0"></script>
-    <script src="app.js?v=17.0"></script>
+    <script src="ai-workflow.js?v=1.1"></script>
+    <script src="prompts.js?v=2.3"></script>
+    <script src="app.js?v=22.0"></script>
 </body>
 </html>

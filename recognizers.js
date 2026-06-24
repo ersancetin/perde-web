@@ -1091,6 +1091,16 @@ function analyzeText(text, enabledEntities, scoreThreshold = 0.35) {
         }
     }
 
+    // Suppress CREDIT_CARD whose digits fall inside an IBAN span — a 16-digit run
+    // within an IBAN's account part can pass Luhn but is not a card number.
+    for (let i = allFindings.length - 1; i >= 0; i--) {
+        const f = allFindings[i];
+        if (f.entity !== 'CREDIT_CARD') continue;
+        const insideIban = allFindings.some(o =>
+            o.entity === 'IBAN_CODE' && f.start >= o.start && f.end <= o.end);
+        if (insideIban) allFindings.splice(i, 1);
+    }
+
     // Deduplication & overlap resolution (Presidio's algorithm)
     let results = removeDuplicates(allFindings);
 
