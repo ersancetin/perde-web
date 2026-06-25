@@ -684,10 +684,12 @@ textarea::placeholder { color: #b5b3ab; }
     .hero-sub { font-size: 13px; }
     #resultsView { flex-direction: column; }
     .results-grid { flex-direction: column; }
-    .findings-panel { width: 100%; min-width: 0; border-right: none; border-bottom: 1px solid var(--border); }
-    .mobile-tabs { display: flex; }
-    .findings-panel.tab-hidden, .output-panel.tab-hidden { display: none; }
-    .output-panel { flex: 1; }
+    /* Mobil: sekme yok — Tespitler (üstte, sınırlı yükseklik, kendi içinde kayar)
+       + Belge (altta, kalanı doldurur, kendi içinde kayar) alt alta. Sağlam: sekme
+       JS'ine bağımlı değil, her ikisi de görünür. */
+    .mobile-tabs { display: none; }
+    .findings-panel { width: 100%; min-width: 0; height: auto; max-height: 38vh; flex: 0 0 auto; border-right: none; border-bottom: 1px solid var(--border); }
+    .output-panel { flex: 1; min-height: 240px; }
     .output-area { padding: 16px 18px; }
     .settings-row { flex-direction: column; gap: 10px; }
     .input-bar { flex-wrap: wrap; gap: 3px; }
