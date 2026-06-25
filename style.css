@@ -21,11 +21,14 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+html { overflow-x: hidden; }             /* mobilde yatay kayma/taşmayı engelle */
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
     background: var(--bg); color: var(--text); line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     font-size: 14px;
+    max-width: 100%;
+    overflow-x: clip;                    /* sticky header'ı bozmadan yatay taşmayı kırp */
 }
 
 /* ─── Header ─── */
@@ -688,8 +691,10 @@ textarea::placeholder { color: #b5b3ab; }
     .settings-row { flex-direction: column; gap: 10px; }
     .input-bar { flex-wrap: wrap; gap: 3px; }
     .privacy-line { font-size: 12px; }
-    .results-summary { padding: 0 12px; font-size: 12px; }
-    .output-header { flex-wrap: wrap; }
+    .results-summary { padding: 0 12px; font-size: 12px; gap: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .output-header { flex-wrap: wrap; gap: 4px; }
+    .ai-options { gap: 8px; }
+    .ai-option-grow { min-width: 140px; }
     .finding-item { min-height: 44px; }
     .finding-toggle { width: 36px; height: 36px; }
     .finding-toggle-all { padding: 4px 10px; font-size: 12px; }
@@ -771,7 +776,7 @@ textarea::placeholder { color: #b5b3ab; }
     position: absolute;
     top: var(--summary-h); left: 0; right: 0; bottom: 0;
     background: var(--bg);
-    overflow-y: auto;
+    overflow-y: auto; overflow-x: hidden;
     z-index: 60;
     padding: 22px 20px 64px;
     scrollbar-width: thin; scrollbar-color: #d5d3cc transparent;
