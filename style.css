@@ -21,15 +21,16 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
-html { overflow-x: hidden; }             /* mobilde yatay kayma/taşmayı engelle */
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
     background: var(--bg); color: var(--text); line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     font-size: 14px;
-    max-width: 100%;
-    overflow-x: clip;                    /* sticky header'ı bozmadan yatay taşmayı kırp */
 }
+/* Yatay kaymayı, position:fixed sonuç ekranını ETKİLEMEDEN, ekran köklerinde kırp.
+   (html/body'de overflow kullanmak iOS Safari'de fixed öğeyi bozuyordu.) */
+#inputView { overflow-x: hidden; }
+main { overflow-x: hidden; }
 
 /* ─── Header ─── */
 header {
@@ -997,3 +998,11 @@ textarea::placeholder { color: #b5b3ab; }
 .ai-review:not(:empty) { margin-top: 10px; }
 .ai-review:empty { display: none; }
 .ai-panel-intro { font-size: 12px; line-height: 1.55; }
+
+/* ─── AI paneli mobil sağlamlık (yatay taşmayı kökten kes) ─── */
+.ai-steps, .ai-step { min-width: 0; }
+.ai-step > * { max-width: 100%; box-sizing: border-box; }
+.ai-step-actions { flex-wrap: wrap; }
+.ai-textarea { overflow-wrap: break-word; }
+.ai-review-warn { overflow-wrap: anywhere; }
+.ai-legend-list { overflow-x: hidden; }
