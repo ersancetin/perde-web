@@ -4,169 +4,143 @@
 <meta charset="UTF-8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Hanken+Grotesk:wght@400;500;600;700&family=Spline+Sans+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Spline+Sans+Mono:wght@400;500;600;700&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
 <style>
-  * { margin:0; padding:0; box-sizing:border-box; }
+  *{margin:0;padding:0;box-sizing:border-box}
   :root{
-    --paper:#efeee9; --ink:#211f1b; --ink2:#615e55; --ink3:#9a978d;
-    --card:#fbfaf6; --line:#e2e0d7; --hair:#d9d7cd;
-    --sage:#3f7a4f; --sage-bg:rgba(63,122,79,.10); --sage-line:#bcd3c2;
-    --clay:#b0432f; --blue:#3f608f; --blue-bg:rgba(63,96,143,.10);
-    --gold:#cdbfa6;
+    --paper:#eae8e1; --paper2:#f4f2ec; --ink:#1a1916; --ink2:#5c594f; --ink3:#94918655;
+    --clay:#a83c28; --clayd:#8c3320; --line:#d8d4c8; --bar:#1a1916;
   }
-  html,body{ width:1280px; height:720px; }
+  html,body{width:1280px;height:720px}
   body{
-    font-family:'Hanken Grotesk',sans-serif; color:var(--ink);
+    font-family:'Spline Sans Mono',monospace; color:var(--ink);
     background:
-      radial-gradient(130% 120% at 8% -10%, #f6f5f0 0%, #ecebe5 46%, #e7e6df 100%);
+      linear-gradient(180deg, rgba(0,0,0,0) 0 1px, transparent 1px) 0 0/100% 100%,
+      radial-gradient(140% 130% at 78% 0%, #f1efe8 0%, #e8e6df 50%, #e2e0d8 100%);
     position:relative; overflow:hidden;
   }
-  /* grain */
-  body::after{
-    content:""; position:absolute; inset:0; pointer-events:none; opacity:.045; mix-blend-mode:multiply;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  }
-  .stage{ position:absolute; inset:0; }
-  .abs{ position:absolute; }
+  /* faint ledger ruling on the left text column */
+  .ledger{ position:absolute; left:0; top:0; width:520px; height:720px;
+    background:repeating-linear-gradient(180deg, transparent 0 47px, rgba(26,25,22,.035) 47px 48px); }
+  .margin{ position:absolute; left:54px; top:0; width:1.5px; height:720px; background:rgba(168,60,40,.30); }
+  body::after{ content:""; position:absolute; inset:0; pointer-events:none; opacity:.05; mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
 
-  /* header */
-  .eyebrow{ left:64px; top:50px; position:absolute; display:flex; align-items:center; gap:9px;
-    font-size:11.5px; font-weight:600; letter-spacing:.22em; color:var(--ink3); text-transform:uppercase; }
-  .eyebrow .dot{ width:5px; height:5px; border-radius:50%; background:var(--clay); }
-  h1{ position:absolute; left:63px; top:72px; font-family:'Fraunces',serif; font-optical-sizing:auto;
-    font-weight:600; font-size:42px; line-height:1.0; letter-spacing:-.014em; color:var(--ink); white-space:nowrap; }
-  h1 em{ font-style:italic; font-weight:500; color:var(--clay); }
-  .sub{ position:absolute; left:64px; top:126px; font-size:16px; color:var(--ink2); font-weight:400; }
-  .rule{ position:absolute; left:64px; top:160px; width:1152px; height:1px; background:var(--hair); }
+  .eyebrow{ position:absolute; left:74px; top:62px; font-size:11.5px; font-weight:600; letter-spacing:.26em;
+    color:var(--clay); text-transform:uppercase; }
+  h1{ position:absolute; left:70px; top:96px; font-family:'Bricolage Grotesque',sans-serif; font-weight:800;
+    font-size:74px; line-height:.92; letter-spacing:-.03em; color:var(--ink); }
+  h1 .g{ color:var(--clay); }
+  h1 .slash{ color:var(--ink3); font-weight:600; }
+  .sub{ position:absolute; left:72px; top:360px; width:430px; font-family:'Spline Sans Mono',monospace;
+    font-size:14px; line-height:1.65; color:var(--ink2); }
+  .sub b{ color:var(--ink); font-weight:600; }
 
-  /* zone labels */
-  .zone{ position:absolute; top:190px; display:flex; align-items:center; gap:8px;
-    font-size:12px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; }
-  .zone small{ font-weight:500; letter-spacing:.02em; text-transform:none; color:var(--ink3); font-size:12.5px; }
-  .zone.local{ left:64px; color:var(--sage); }
-  .zone.ext{ left:916px; color:var(--clay); }
+  .flow{ position:absolute; left:72px; top:474px; display:flex; flex-direction:column; gap:11px; }
+  .frow{ display:flex; align-items:center; gap:11px; font-size:13px; color:var(--ink); }
+  .frow .n{ font-family:'Bricolage Grotesque',sans-serif; font-weight:700; font-size:13px; color:var(--paper2);
+    background:var(--ink); width:22px; height:22px; border-radius:5px; display:flex; align-items:center; justify-content:center; }
+  .frow .n.cl{ background:var(--clay); }
+  .frow s{ text-decoration:none; color:var(--ink2); font-size:12.5px; }
 
-  /* device tint band */
-  .band{ position:absolute; left:48px; top:178px; width:806px; height:392px; border-radius:20px;
-    background:linear-gradient(180deg, rgba(255,255,255,.34), rgba(255,255,255,.10));
-    border:1px solid rgba(226,224,215,.7); }
+  /* ===== Redacted document ===== */
+  .doc{ position:absolute; left:636px; top:80px; width:582px; height:498px; background:var(--paper2);
+    border:1px solid #ded9cd; border-radius:3px; transform:rotate(-1.3deg);
+    box-shadow:0 2px 4px rgba(26,25,22,.05), 0 30px 60px -28px rgba(26,25,22,.45);
+    padding:0; }
+  .doc::before{ content:""; position:absolute; inset:0; border-radius:3px; box-shadow:inset 0 0 0 1px rgba(255,255,255,.5); pointer-events:none; }
+  .dochead{ display:flex; align-items:center; justify-content:space-between; padding:15px 26px;
+    border-bottom:1.5px dashed #d8d2c4; }
+  .dochead .l{ display:flex; align-items:center; gap:9px; font-size:11px; letter-spacing:.16em; color:var(--ink2); text-transform:uppercase; }
+  .dochead .r{ font-size:10.5px; letter-spacing:.12em; color:var(--clay); text-transform:uppercase; font-weight:600; }
+  .docbody{ padding:26px 30px 30px; font-size:15px; line-height:2.15; color:var(--ink); }
+  .court{ font-weight:600; }
+  .bar{ display:inline-block; background:var(--bar); color:#f1efe8; font-weight:600; font-size:13px;
+    padding:2px 9px 3px; border-radius:3px; letter-spacing:.03em; transform:translateY(1px);
+    box-shadow:0 1px 0 rgba(0,0,0,.35); }
+  .docfoot{ position:absolute; left:30px; bottom:20px; font-size:11px; color:var(--ink3); color:#9a9789; letter-spacing:.04em; }
 
-  /* cards */
-  .card{ position:absolute; width:252px; height:116px; border-radius:15px; padding:15px 18px;
-    background:linear-gradient(180deg,#fffefb,#faf9f4); border:1px solid var(--line);
-    box-shadow:0 1px 1px rgba(33,31,27,.03), 0 16px 30px -22px rgba(33,31,27,.30); }
-  .num{ position:absolute; right:14px; top:8px; font-family:'Fraunces',serif; font-weight:500;
-    font-size:34px; color:var(--gold); line-height:1; }
-  .ttl{ font-size:16px; font-weight:700; letter-spacing:-.01em; color:var(--ink); margin-bottom:9px; }
-  .d{ font-size:13px; color:var(--ink2); line-height:1.5; }
-  .d.mut{ color:var(--ink3); }
-  .tok{ font-family:'Spline Sans Mono',monospace; font-size:12px; font-weight:600;
-    background:var(--blue-bg); color:var(--blue); padding:2px 7px; border-radius:6px; display:inline-block; margin-top:7px; }
-  .tok.sg{ background:var(--sage-bg); color:var(--sage); }
+  /* stamp */
+  .stamp{ position:absolute; left:1052px; top:430px; width:124px; height:124px; transform:rotate(-13deg);
+    border:2.5px solid var(--clay); border-radius:50%; color:var(--clay); opacity:.82;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;
+    box-shadow:inset 0 0 0 4px rgba(168,60,40,0); }
+  .stamp::before{ content:""; position:absolute; inset:7px; border:1px solid var(--clay); border-radius:50%; opacity:.6; }
+  .stamp .t1{ font-family:'Bricolage Grotesque',sans-serif; font-weight:800; font-size:19px; letter-spacing:.02em; line-height:1; }
+  .stamp .t2{ font-size:8.5px; letter-spacing:.22em; margin-top:5px; font-weight:600; }
+  .stamp .star{ font-size:11px; margin-top:4px; opacity:.7; }
 
-  .card.resolve{ background:linear-gradient(180deg,#f4f8f4,#eef4ee); border-color:var(--sage-line); }
-  .card.note{ background:rgba(255,255,255,.55); border:1px dashed var(--hair); box-shadow:none; }
-  .note .nt{ font-size:13px; font-weight:600; color:var(--ink2); margin-bottom:8px; }
-  .note .nd{ font-size:12.5px; color:var(--ink3); line-height:1.55; }
-
-  /* external dark card */
-  .ext-card{ position:absolute; left:916px; top:300px; width:300px; height:158px; border-radius:18px;
-    background:linear-gradient(155deg,#2c2a26 0%,#1b1a17 100%); color:var(--paper);
-    box-shadow:0 24px 44px -22px rgba(27,25,22,.6), inset 0 1px 0 rgba(255,255,255,.05);
-    display:flex; flex-direction:column; justify-content:center; align-items:center; gap:6px; overflow:hidden; }
-  .ext-card .glow{ position:absolute; width:220px; height:220px; border-radius:50%; right:-80px; top:-90px;
-    background:radial-gradient(circle, rgba(176,67,47,.28), transparent 70%); }
-  .ext-card b{ font-family:'Fraunces',serif; font-weight:600; font-size:21px; letter-spacing:.01em; z-index:1; }
-  .ext-card span{ font-size:12.5px; color:#b8b4ab; z-index:1; }
+  /* handwritten decode note */
+  .note{ position:absolute; left:566px; top:486px; transform:rotate(-3deg); z-index:5; }
+  .note .hand{ font-family:'Caveat',cursive; font-weight:700; font-size:30px; color:var(--clay); line-height:1; }
+  .note .cap{ font-family:'Spline Sans Mono',monospace; font-size:10.5px; color:var(--ink2); letter-spacing:.04em; margin-top:5px; }
+  .pin{ position:absolute; left:-2px; top:-12px; width:10px; height:10px; border-radius:50%; background:var(--clay); box-shadow:0 1px 3px rgba(0,0,0,.3); }
+  /* connector from note to first bar */
+  .conn{ position:absolute; left:0; top:0; }
 
   /* footer */
-  .frule{ position:absolute; left:64px; top:626px; width:1152px; height:1px; background:var(--hair); }
-  .foot{ position:absolute; left:64px; top:648px; display:flex; align-items:center; gap:11px;
-    font-size:14.5px; color:var(--ink2); }
-  .foot b{ color:var(--clay); font-weight:700; }
-  .diamond{ width:9px; height:9px; background:var(--clay); transform:rotate(45deg); flex:0 0 auto; }
-  .url{ position:absolute; left:64px; top:684px; font-size:12.5px; color:var(--ink3); letter-spacing:.01em; }
-
-  /* boundary label */
-  .blabel{ position:absolute; left:838px; top:556px; font-size:10.5px; font-weight:700; letter-spacing:.18em;
-    text-transform:uppercase; color:var(--clay); opacity:.65; }
-  .xlabel{ position:absolute; left:864px; top:258px; font-size:12px; font-weight:600; color:var(--ink2); }
+  .frule{ position:absolute; left:54px; top:632px; width:1162px; height:1.5px; background:var(--clay); opacity:.25; }
+  .foot{ position:absolute; left:72px; top:650px; font-size:12.5px; color:var(--ink2); display:flex; align-items:center; gap:10px; }
+  .foot .sq{ width:8px; height:8px; background:var(--clay); transform:rotate(45deg); flex:0 0 auto; }
+  .foot b{ color:var(--clay); font-weight:600; }
+  .url{ position:absolute; left:72px; top:682px; font-size:11.5px; color:#9a9789; letter-spacing:.05em; }
+  .brand{ position:absolute; right:64px; top:656px; text-align:right; font-family:'Bricolage Grotesque',sans-serif;
+    font-weight:800; font-size:17px; color:var(--ink); letter-spacing:-.01em; }
+  .brand small{ display:block; font-family:'Spline Sans Mono',monospace; font-weight:500; font-size:10.5px; color:var(--ink2); letter-spacing:.08em; margin-top:2px; }
 </style>
 </head>
 <body>
-<div class="stage">
-  <div class="eyebrow"><span class="dot"></span>Perde Web · Açık kaynak · Tarayıcıda</div>
-  <h1>Yerel maskeleme, <em>güvenli</em> yapay zeka.</h1>
-  <div class="sub">Kişisel veriler tarayıcıdan çıkmadan AI'a hazırlanır; yanıt yine tarayıcıda çözülür.</div>
-  <div class="rule"></div>
+  <div class="ledger"></div>
+  <div class="margin"></div>
 
-  <!-- device band + label -->
-  <div class="band"></div>
-  <div class="zone local">
-    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#3f7a4f" stroke-width="1.5"><rect x="3" y="7" width="10" height="7" rx="1.6" fill="#3f7a4f" stroke="none"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></svg>
-    Cihazınız <small>— tarayıcı · internet yok</small>
-  </div>
-  <div class="zone ext">
-    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#b0432f" stroke-width="1.35"><circle cx="8" cy="8" r="6.6"/><path d="M1.4 8h13.2M8 1.4v13.2"/><ellipse cx="8" cy="8" rx="3" ry="6.6"/></svg>
-    Harici yapay zeka
+  <div class="eyebrow">Perde Web — yerel kişisel veri maskeleme</div>
+  <h1>Maskele.<br>Gönder.<br><span class="g">Geri çöz.</span></h1>
+
+  <div class="sub">Avukat, belgeyi <b>ChatGPT / Claude / Gemini</b>'de kullanmak ister ama müvekkil verisini dışarı göndermek istemez. Perde, kişisel veriyi <b>tarayıcıda</b> token'a çevirir; yanıt gelince <b>yine tarayıcıda</b> geri açar.</div>
+
+  <div class="flow">
+    <div class="frow"><span class="n">1</span> Belgeyi yerelde analiz et <s>· 100+ veri türü</s></div>
+    <div class="frow"><span class="n">2</span> Tokenlı prompt'u AI'a yapıştır <s>· yalnızca maskeli metin</s></div>
+    <div class="frow"><span class="n cl">3</span> Yanıttaki token'ları geri çöz <s>· harita yalnızca sizde</s></div>
   </div>
 
-  <!-- top row -->
-  <div class="card" style="left:64px; top:224px;">
-    <div class="num">01</div><div class="ttl">Belge</div>
-    <div class="d">PDF · DOCX · UDF · metin</div>
-    <div class="d mut">"…Ahmet Yılmaz, X A.Ş.…"</div>
-  </div>
-  <div class="card" style="left:332px; top:224px;">
-    <div class="num">02</div><div class="ttl">Yerel analiz</div>
-    <div class="d">100+ veri türü tespiti</div>
-    <div class="d mut">kişi · TCKN · IBAN · adres</div>
-  </div>
-  <div class="card" style="left:600px; top:224px;">
-    <div class="num">03</div><div class="ttl">Tokenlı prompt</div>
-    <div class="d">geri döndürülebilir token</div>
-    <span class="tok">[KISI_1] · [KURUM_2]</span>
-  </div>
-
-  <!-- bottom row -->
-  <div class="card resolve" style="left:64px; top:438px;">
-    <div class="num" style="color:#bcd3c2;">06</div><div class="ttl">Yerel geri çözüm</div>
-    <div class="d">token → gerçek değer</div>
-    <span class="tok sg">[KISI_1] → Ahmet Yılmaz</span>
-  </div>
-  <div class="card" style="left:332px; top:438px;">
-    <div class="num">05</div><div class="ttl">Yanıtı yapıştır</div>
-    <div class="d">AI cevabı tarayıcıya döner</div>
-    <div class="d mut">[KISI_1] hâlâ tokenlı</div>
-  </div>
-  <div class="card note" style="left:600px; top:438px;">
-    <div class="nt">Etiket haritası</div>
-    <div class="nd">yalnızca cihazınızda saklı · AI'a gönderilmez · istediğinizde silinir</div>
+  <!-- Redacted petition -->
+  <div class="doc">
+    <div class="dochead">
+      <div class="l">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#5c594f" stroke-width="1.5"><rect x="3" y="7" width="10" height="7" rx="1.5" fill="#5c594f" stroke="none"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></svg>
+        Dilekçe — yapay zekaya giden hâli
+      </div>
+      <div class="r">yerelde maskelendi</div>
+    </div>
+    <div class="docbody">
+      <span class="court">İstanbul 9. Asliye Hukuk Mahkemesi'ne;</span><br>
+      Davacı <span class="bar">[KISI_1]</span> vekili sıfatıyla, T.C.
+      <span class="bar">[TCKN_1]</span> numaralı müvekkilim adına; davalı
+      <span class="bar">[KURUM_1]</span> şirketi ile
+      <span class="bar">[ADRES_1]</span> adresinde kurulan ilişkiden doğan alacağın tahsili talep olunur.
+    </div>
+    <div class="docfoot">gerçek değerler bu belgede yok — yalnızca token'lar gönderilir</div>
   </div>
 
-  <!-- external -->
-  <div class="ext-card">
-    <div class="glow"></div>
-    <b>ChatGPT · Claude</b><b style="margin-top:-2px;">Gemini …</b>
-    <span>yalnızca maskeli metin gider</span>
+  <!-- official stamp -->
+  <div class="stamp">
+    <div class="t1">YEREL</div>
+    <div class="t2">VERİ · CİHAZDA</div>
+    <div class="star">✶</div>
   </div>
 
-  <div class="xlabel">04 · siz kopyalar-yapıştırırsınız</div>
-  <div class="blabel">güven sınırı</div>
+  <!-- handwritten decode note -->
+  <div class="note">
+    <div class="pin"></div>
+    <div class="hand">[KISI_1] → Ahmet Yılmaz</div>
+    <div class="cap">geri çözüm yalnızca sizin tarayıcınızda</div>
+  </div>
 
-  <!-- connectors -->
-  <svg class="abs" style="left:0; top:0;" width="1280" height="720">
-    <defs>
-      <marker id="ar" markerWidth="9" markerHeight="9" refX="6.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#b3b0a6"/></marker>
-      <marker id="ag" markerWidth="9" markerHeight="9" refX="6.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#3f7a4f"/></marker>
-    </defs>
-    <line x1="318" y1="282" x2="330" y2="282" stroke="#b3b0a6" stroke-width="2" marker-end="url(#ar)"/>
-    <line x1="586" y1="282" x2="598" y2="282" stroke="#b3b0a6" stroke-width="2" marker-end="url(#ar)"/>
-    <path d="M852 282 H1066 V298" fill="none" stroke="#b3b0a6" stroke-width="2" marker-end="url(#ar)"/>
-    <path d="M1066 458 V496 H586" fill="none" stroke="#b3b0a6" stroke-width="2" marker-end="url(#ar)"/>
-    <line x1="330" y1="496" x2="318" y2="496" stroke="#3f7a4f" stroke-width="2" marker-end="url(#ag)"/>
-    <line x1="884" y1="200" x2="884" y2="548" stroke="#b0432f" stroke-width="1.4" stroke-dasharray="2 6" stroke-linecap="round" opacity="0.5"/>
-  </svg>
-</div>
+  <!-- footer -->
+  <div class="frule"></div>
+  <div class="foot"><span class="sq"></span>KVKK uyumluluk garantisi <b>değildir</b>; tam anonimleştirme iddia etmez. Avukatın yerini almaz — çıktı kontrol edilmelidir.</div>
+  <div class="url">açık kaynak · tamamen tarayıcıda · ersancetin.github.io/perde-web</div>
+  <div class="brand">perde<span style="color:#a83c28">.web</span><small>v0.2.0-beta · public beta</small></div>
 </body>
 </html>
