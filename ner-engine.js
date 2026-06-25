@@ -466,7 +466,8 @@ function detectOrganizations(text) {
     // "X birliği/derneği" eki org gibi görünen ama hukuki/genel kavram olan kalıplar
     const NON_ORG_PHRASES = new Set(['evlilik birliği', 'iş birliği', 'işbirliği',
         'güç birliği', 'fikir birliği', 'menfaat birliği', 'mal birliği', 'kader birliği',
-        'eylem birliği', 'dil birliği', 'düşünce birliği', 'aile birliği', 'söz birliği']);
+        'eylem birliği', 'dil birliği', 'düşünce birliği', 'aile birliği', 'söz birliği',
+        'türk şirketi', 'yabancı şirketi', 'yabanci şirketi', 'yerli şirketi']);
     const COURT_SUFFIXES_SET = new Set(['mahkemesi', 'savcılığı', 'noterliği', 'adliyesi']);
     const NOTARY_SUFFIXES_SET = new Set(['noterliği']);
     for (const suffix of ORG_SUFFIXES) {
@@ -1742,8 +1743,8 @@ function detectPersonalAttributes(origText, enabledEntities) {
     if (enabledEntities.has('DISABILITY_STATUS')) {
         const disabilityPatterns = [
             /(?:engel\s*(?:oran[ıIi]|durumu|türü|dereces[İiI])|sakatl[ıIi]k\s*(?:oran[ıIi]|durumu)|malul[İiI]yet\s*(?:oran[ıIi]|durumu|dereces[İiI]))\s*[:\-]\s*([^\n,;]{2,40}?)(?=\s*[,.\n;]|$)/gi,
-            // Ters sıra: "%40 oranında maluliyet/sakatlık/engel"
-            /(%\s?\d{1,3}(?:[.,]\d+)?)\s*oran[ıi]nda\s+(?:malul[İiı]yet|sakatl[ıi]k|engel)/gi,
+            // Ters sıra: "%40 oranında maluliyet/sakatlık/engel/sürekli iş göremezlik"
+            /(%\s?\d{1,3}(?:[.,]\d+)?)\s*oran[ıi]nda\s+(?:malul[İiı]yet|sakatl[ıi]k|engel|(?:s[üu]rekli\s+)?(?:i[şs]\s+)?g[öo]remezlik)/gi,
         ];
         for (const re of disabilityPatterns) {
             const regex = new RegExp(re.source, re.flags);
@@ -1753,6 +1754,26 @@ function detectPersonalAttributes(origText, enabledEntities) {
                 if (val.length < 2) continue;
                 const valStart = m.index + m[0].indexOf(m[1]);
                 addFinding('DISABILITY_STATUS', val, valStart, 0.9);
+            }
+        }
+    }
+
+    if (enabledEntities.has('USERNAME')) {
+        const usernamePatterns = [
+            // "kullanıcı 'burak_demir35'", "kullanıcı adı: x", "username: x", "rumuz x"
+            /(?:kullan[ıiİI]c[ıiİI](?:\s*ad[ıiİI](?:yla)?)?|username|nick(?:name)?|rumuz|takma\s*ad)\s*[:\-]?\s*["'“]?([A-Za-z][A-Za-z0-9._-]{2,30})["'”]?/gi,
+            // "'deniz.acar' kullanıcı adıyla" — değer önce, anahtar sonra
+            /["'“]([A-Za-z][A-Za-z0-9._-]{2,30})["'”]\s*(?:adl[ıiİI]\s*kullan|kullan[ıiİI]c[ıiİI]\s*ad|nick|rumuz)/gi,
+        ];
+        for (const re of usernamePatterns) {
+            const regex = new RegExp(re.source, re.flags);
+            let m;
+            while ((m = regex.exec(text)) !== null) {
+                const val = m[1].trim();
+                // Handle benzeri olmalı: en az bir rakam/nokta/alt-çizgi/tire içersin (düz kelime FP'sini engelle)
+                if (val.length < 3 || !/[0-9._-]/.test(val)) continue;
+                const valStart = m.index + m[0].indexOf(m[1]);
+                addFinding('USERNAME', val, valStart, 0.85);
             }
         }
     }

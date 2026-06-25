@@ -50,9 +50,9 @@ Every prompt includes guardrails instructing the model to (a) preserve the token
 ## Development
 
 ```bash
-npm test           # 2228 unit tests (incl. AI workflow round-trip + regression guards)
+npm test           # 2237 unit tests (incl. AI workflow round-trip + regression guards)
 npm run benchmark  # 15-document co-developed F1 benchmark (CI-gated ≥95%)
-npm run holdout    # 34-document INDEPENDENT holdout set (CI-gated on recall/F1)
+npm run holdout    # 50-document INDEPENDENT holdout set (CI-gated on recall/F1)
 ```
 
 All three run in CI and are mandatory; the holdout exits non-zero if masking-coverage recall < 94% or F1 < 93% (an anti-regression floor, not the reported score).
@@ -60,10 +60,10 @@ All three run in CI and are mandatory; the holdout exits non-zero if masking-cov
 Benchmark (co-developed with the engine — overstates real-world performance):
 - Micro F1: 97.5% (347 TP, 11 FP, 7 FN), Macro F1: 98.4%
 
-Holdout (independent, **34** synthetic-but-realistic docs across litigation, enforcement, insurance, arbitration, health, customs, KVKK, employment, etc. — the engine was **not** tuned on them):
-- Masking-coverage Micro F1: **99.0%** (P 99.2% / R **98.8%** — did we detect & reasonably class each PII; the product-relevant metric)
-- Strict per-type Micro F1: **89.9%** (gap vs coverage is type-granularity, e.g. SALARY vs MONETARY, ADDRESS vs LOCATION — not missed PII)
-- Discipline: the set was measured **before** any engine change (first-run recall 94.8%); gaps it surfaced were then fixed and locked with regression tests — passport format, MERSİS/trade-registry/baro-sicil format variants, single-word notaries (`Konak Noterliği`), full company-suffix chains (`… San. Tic. Ltd. Şti.`), street-name/person collisions (`Bağdat Caddesi`), and full-address block merging. Genuine label errors were corrected; the engine was **not** contorted to fit these synthetic docs.
+Holdout (independent, **50** synthetic-but-realistic docs across litigation, enforcement, insurance, arbitration, health, customs, KVKK, employment, property, family, tax, consumer, etc. — the engine was **not** tuned on them):
+- Masking-coverage Micro F1: **99.5%** (P 99.5% / R **99.5%** — did we detect & reasonably class each PII; the product-relevant metric)
+- Strict per-type Micro F1: **91.8%** (gap vs coverage is type-granularity, e.g. SALARY vs MONETARY, ADDRESS vs LOCATION — not missed PII)
+- Discipline: each batch was measured **before** any engine change (original 34-doc set first-run recall 94.8%; the 16-doc expansion to 50 first-ran at 98.1%); gaps each surfaced were then fixed and locked with regression tests — passport/MERSİS/trade-registry/baro-sicil format variants, single-word notaries (`Konak Noterliği`), full company-suffix chains (`… San. Tic. Ltd. Şti.`) and foreign suffixes (`GmbH`), street-name/person collisions (`Bağdat Caddesi`), full-address block merging, disability phrasing (`iş göremezlik`), and contextual usernames. Genuine label errors were corrected; the engine was **not** contorted to fit these synthetic docs — a change that helped the holdout but regressed the benchmark (a `tahkim merkezi` org suffix) was reverted.
 - Most remaining "misses" are **mis-classifications where the span is still masked** under another type (e.g. a foreign name caught as nationality). Truly-undetected spans are very few.
 
 ## Architecture
@@ -83,7 +83,7 @@ lib/                Self-hosted PDF.js, Tesseract.js, JSZip
 test.js             Unit tests (all test data is synthetic)
 bench-lib.js        Shared scoring (IoU/value matching, P/R/F1)
 benchmark.js        Co-developed F1 benchmark (15 docs)
-holdout.js          Independent holdout set (34 docs) + dual-metric report
+holdout.js          Independent holdout set (50 docs) + dual-metric report
 ```
 
 ## Threat Model

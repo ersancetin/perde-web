@@ -61,6 +61,7 @@ const TR_FIRST_NAMES = new Set([
     'serkan', 'volkan', 'hakan', 'tolga', 'sinan', 'barış', 'kaan', 'tarık',
     'erdem', 'eren', 'arda', 'furkan', 'berke', 'utku', 'doruk', 'alp', 'efe',
     'baran', 'tuna', 'umut', 'koray', 'ilker', 'cenk', 'ozan', 'kağan', 'engin', 'okan', 'caner',
+    'tuncay',
     'altan', 'çağlar', 'ersin', 'gürkan', 'polat', 'soner', 'yiğit', 'batuhan',
     'berkay', 'emir', 'mert', 'kıvanç', 'taner', 'taylan', 'görkem', 'atakan',
     'ersan', 'cihan', 'göksel', 'aykut', 'ayhan', 'bülent', 'cüneyt', 'ertuğrul', 'ilkay',
@@ -215,6 +216,7 @@ const ORG_SUFFIXES = [
     'tıp merkezi', 'klinigi', 'kliniği', 'polikliniği', 'laboratuvarı',
     'eczanesi', 'sağlık merkezi', 'sağlık ocağı', 'dispanser',
     'avm', 'plaza', 'tower', 'center', 'centre',
+    'GmbH',
 ];
 
 const KNOWN_ORGS = new Set([

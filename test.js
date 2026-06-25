@@ -7086,6 +7086,23 @@ expectNot('Maliki bulunduğum Bağlarbaşı Mahallesinde', 'LOCATION', 'Maliki b
 expect('BAKIRKÖY CUMHURİYET BAŞSAVCILIĞINA başvurdum', 'COURT', 'BAŞSAVCILIĞI');
 expectNot('BAKIRKÖY CUMHURİYET BAŞSAVCILIĞINA başvurdum', 'COURT', 'BAŞ SAVCILIĞI');
 
+// 50-belge holdout turu düzeltmeleri
+// Maluliyet: "iş göremezlik" ifadesi
+expect('Sigortalıda %30 oranında sürekli iş göremezlik tespit edilmiştir', 'DISABILITY_STATUS', '%30');
+expect('%45 oranında iş göremezlik raporu verildi', 'DISABILITY_STATUS', '%45');
+// Yabancı şirket eki GmbH
+expect("Klaus Weber'in temsil ettiği Weber GmbH ile sözleşme", 'ORGANIZATION', 'Weber GmbH');
+// "Türk/yabancı şirketi" ORG FP olmamalı
+expectNot('Türk şirketi Anadolu İhracat A.Ş. ile uyuşmazlık', 'ORGANIZATION', 'Türk şirketi');
+// Gazetteer: Tuncay
+expect('DAVACI: Tuncay Şahin (T.C. 74859302115)', 'PERSON_NAME', 'Tuncay Şahin');
+// Bağlamsal kullanıcı adı (handle-benzeri: rakam/nokta/alt-çizgi şart)
+expect('Şikayetçi "deniz.acar" kullanıcı adıyla kayıtlıdır', 'USERNAME', 'deniz.acar');
+expect('Etkilenen kullanıcı "burak_demir35" hesabına aittir', 'USERNAME', 'burak_demir35');
+expect('Kullanıcı adı: ahmet_2024 olarak görünmektedir', 'USERNAME', 'ahmet_2024');
+// FP guard: düz kelime (rakam/nokta/alt-çizgi yok) username olmamalı
+expectNot('Kullanıcı adı müşteri tarafından girilmemiştir', 'USERNAME', 'müşteri');
+
 // ============================================================
 // AI WORKFLOW TESTS (ai-workflow.js + prompts.js)
 // ============================================================

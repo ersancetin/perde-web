@@ -571,6 +571,259 @@ Sanık Emre Kılıç (T.C. 48576920183) hakkında 09.01.2024 tarihinde işlenen 
             { entity: 'ADDRESS', value: 'Yıldıztepe Mah. Gül Sok. No:3 Keçiören/Ankara' },
         ],
     },
+
+    {
+        name: 'Hastane Epikriz', category: 'saglik',
+        text: `EPİKRİZ RAPORU
+Hasta: Hülya Aksoy
+T.C. Kimlik: 29384756102
+Protokol No: 2024778899
+Yatış: 04.03.2024 - Çıkış: 11.03.2024
+Tanı: Akut miyokart enfarktüsü
+Kan Grubu: B Rh pozitif
+
+Hastaya koroner anjiyografi uygulanmıştır. Tedaviyi yürüten Dr. Kaan Erdem'dir. Taburcu sonrası kontrol için Dr. Erdem'e başvurulması önerilir. İletişim: 0532 808 09 10.`,
+        expected: [
+            { entity: 'PERSON_NAME', value: 'Hülya Aksoy' },
+            { entity: 'TR_NATIONAL_ID', value: '29384756102' },
+            { entity: 'MEDICAL_ID', value: '2024778899' },
+            { entity: 'DATE_TIME', value: '04.03.2024' },
+            { entity: 'DATE_TIME', value: '11.03.2024' },
+            { entity: 'HEALTH_CONDITION', value: 'Akut miyokart enfarktüsü' },
+            { entity: 'BLOOD_TYPE', value: 'B Rh pozitif' },
+            { entity: 'PERSON_NAME', value: 'Kaan Erdem' },
+            { entity: 'PHONE_NUMBER', value: '0532 808 09 10' },
+        ],
+    },
+    {
+        name: 'İş Kazası SGK Bildirimi', category: 'is-hukuku',
+        text: `İŞ KAZASI BİLDİRİM FORMU
+
+Sigortalı: Yavuz Tekin
+T.C. Kimlik: 38475610293
+SGK Sicil No: 2098765432
+İşyeri: Demir Çelik Sanayi A.Ş.
+
+17.04.2024 tarihinde meydana gelen iş kazasında sigortalıda %30 oranında sürekli iş göremezlik tespit edilmiştir. Sigortalının mesleği kaynakçıdır, yaşı 41'dir. Tazminat talebi 450.000 TL'dir.`,
+        expected: [
+            { entity: 'PERSON_NAME', value: 'Yavuz Tekin' },
+            { entity: 'TR_NATIONAL_ID', value: '38475610293' },
+            { entity: 'TR_SGK_NO', value: '2098765432' },
+            { entity: 'ORGANIZATION', value: 'Demir Çelik Sanayi A.Ş.' },
+            { entity: 'DATE_TIME', value: '17.04.2024' },
+            { entity: 'DISABILITY_STATUS', value: '%30' },
+            { entity: 'AGE', value: '41' },
+            { entity: 'MONETARY_AMOUNT', value: '450.000 TL' },
+        ],
+    },
+    {
+        name: 'Hizmet Sözleşmesi', category: 'sozlesme',
+        text: `HİZMET SÖZLEŞMESİ
+
+İşbu sözleşme, hizmet alan Yıldırım Danışmanlık Ltd. Şti. ile hizmet veren Berk Yılmaz arasında 01.05.2024 tarihinde imzalanmıştır. Hizmet bedeli aylık 45.000 TL olup, ödemeler Berk Yılmaz'ın TR82 0004 6011 2233 4455 6677 88 numaralı hesabına yapılacaktır. Sözleşme süresi bir yıldır. İletişim: berk.yilmaz@danismanlik.com.`,
+        expected: [
+            { entity: 'ORGANIZATION', value: 'Yıldırım Danışmanlık Ltd. Şti.' },
+            { entity: 'PERSON_NAME', value: 'Berk Yılmaz' },
+            { entity: 'DATE_TIME', value: '01.05.2024' },
+            { entity: 'MONETARY_AMOUNT', value: '45.000 TL' },
+            { entity: 'IBAN_CODE', value: 'TR82 0004 6011 2233 4455 6677 88' },
+            { entity: 'EMAIL_ADDRESS', value: 'berk.yilmaz@danismanlik.com' },
+        ],
+    },
+    {
+        name: 'Vekaletname (Araç)', category: 'noter',
+        text: `VEKALETNAME
+
+Vekalet veren Sibel Aydın (T.C. 47586920184), İnönü Mah. Barış Cad. No:23 Bornova/İzmir adresinde mukim olup; vekil Av. Tolga Demir'i, 34 XY 1905 plakalı aracını satışa yetkili kılmıştır. İşbu vekaletname 22.05.2024 tarihinde Bornova 3. Noterliği'nde, yevmiye no 09812 ile düzenlenmiştir.`,
+        expected: [
+            { entity: 'PERSON_NAME', value: 'Sibel Aydın' },
+            { entity: 'TR_NATIONAL_ID', value: '47586920184' },
+            { entity: 'ADDRESS', value: 'İnönü Mah. Barış Cad. No:23 Bornova/İzmir' },
+            { entity: 'PERSON_NAME', value: 'Tolga Demir' },
+            { entity: 'TR_LICENSE_PLATE', value: '34 XY 1905' },
+            { entity: 'DATE_TIME', value: '22.05.2024' },
+            { entity: 'NOTARY', value: 'Bornova 3. Noterliği' },
+        ],
+    },
+    {
+        name: 'E-Ticaret İade Talebi', category: 'tuketici',
+        text: `Başvuran: Pelin Yıldız
+Sipariş No: SP-2024-558712
+Sipariş Tarihi: 02.06.2024
+
+Hızlı Alışveriş A.Ş. üzerinden 8.499 TL bedelle satın aldığım ürün ayıplı çıkmıştır. Cayma hakkımı kullanarak iadeyi talep ediyorum. İade tutarının TR05 0001 0099 8877 6655 4433 00 hesabına yatırılmasını rica ederim. E-posta: pelin.yildiz@mail.com.`,
+        expected: [
+            { entity: 'PERSON_NAME', value: 'Pelin Yıldız' },
+            { entity: 'GOV_DOCUMENT_ID', value: 'SP-2024-558712' },
+            { entity: 'DATE_TIME', value: '02.06.2024' },
+            { entity: 'ORGANIZATION', value: 'Hızlı Alışveriş A.Ş.' },
+            { entity: 'MONETARY_AMOUNT', value: '8.499 TL' },
+            { entity: 'IBAN_CODE', value: 'TR05 0001 0099 8877 6655 4433 00' },
+            { entity: 'EMAIL_ADDRESS', value: 'pelin.yildiz@mail.com' },
+        ],
+    },
+    {
+        name: 'Tapu / Taşınmaz Devri', category: 'gayrimenkul',
+        text: `Satıcı Orhan Yılmaz, alıcı Ayşe Kara'ya (T.C. 56473829110) maliki olduğu Çankaya İlçesi, 3245 ada 12 parsel sayılı taşınmazı 6.800.000 TL bedelle satmıştır. Tapu devri 14.06.2024 tarihinde Ankara Tapu Müdürlüğü'nde gerçekleşmiştir. Kapora 1.000.000 TL peşin ödenmiştir.`,
+        expected: [
+            { entity: 'PERSON_NAME', value: 'Orhan Yılmaz' },
+            { entity: 'PERSON_NAME', value: 'Ayşe Kara' },
+            { entity: 'TR_NATIONAL_ID', value: '56473829110' },
+            { entity: 'LOCATION', value: 'Çankaya' },
+            { entity: 'PROPERTY_ID', value: '3245 ada 12 parsel' },
+            { entity: 'MONETARY_AMOUNT', value: '6.800.000 TL' },
+            { entity: 'DATE_TIME', value: '14.06.2024' },
+            { entity: 'ORGANIZATION', value: 'Ankara Tapu Müdürlüğü' },
+            { entity: 'MONETARY_AMOUNT', value: '1.000.000 TL' },
+        ],
+    },
+    {
+        name: 'Nafaka / Velayet', category: 'aile',
+        text: `ANKARA 5. AİLE MAHKEMESİ'NE
+
+DAVACI: Ceren Demir
+DAVALI: Burak Demir (T.C. 65748392011)
+
+Taraflar 19.05.2015 tarihinde evlenmiş, 28.03.2023 tarihinde boşanmıştır. Müşterek çocuklar Ela Demir ve Mert Demir'in velayeti davacıdadır. Davalının aylık 7.500 TL iştirak nafakasını ödemediği, birikmiş borcun 90.000 TL olduğu tespit edilmiştir.`,
+        expected: [
+            { entity: 'COURT', value: 'Ankara 5. Aile Mahkemesi' },
+            { entity: 'PERSON_NAME', value: 'Ceren Demir' },
+            { entity: 'PERSON_NAME', value: 'Burak Demir' },
+            { entity: 'TR_NATIONAL_ID', value: '65748392011' },
+            { entity: 'DATE_TIME', value: '19.05.2015' },
+            { entity: 'DATE_TIME', value: '28.03.2023' },
+            { entity: 'PERSON_NAME', value: 'Ela Demir' },
+            { entity: 'PERSON_NAME', value: 'Mert Demir' },
+            { entity: 'MONETARY_AMOUNT', value: '7.500 TL' },
+            { entity: 'MONETARY_AMOUNT', value: '90.000 TL' },
+        ],
+    },
+    {
+        name: 'Konkordato Talebi', category: 'ticari',
+        text: `Şirketimiz Yıldız Makina San. ve Tic. A.Ş. (MERSİS: 4455667788990011), Ankara Ticaret Sicili 778899 numarasında kayıtlıdır. Vergi numarası 3344556677'dir. Şirket, toplam 12.500.000 TL borç nedeniyle 20.06.2024 tarihinde konkordato talebinde bulunmuştur. Yetkili Mehmet Aslan'dır.`,
+        expected: [
+            { entity: 'ORGANIZATION', value: 'Yıldız Makina San. ve Tic. A.Ş.' },
+            { entity: 'TR_MERSIS_NO', value: '4455667788990011' },
+            { entity: 'LOCATION', value: 'Ankara' },
+            { entity: 'TRADE_REGISTRY_NO', value: '778899' },
+            { entity: 'TR_VERGI_NO', value: '3344556677' },
+            { entity: 'MONETARY_AMOUNT', value: '12.500.000 TL' },
+            { entity: 'DATE_TIME', value: '20.06.2024' },
+            { entity: 'PERSON_NAME', value: 'Mehmet Aslan' },
+        ],
+    },
+    {
+        name: 'İdari Dava (Danıştay)', category: 'idari',
+        text: `DANIŞTAY İLGİLİ DAİRESİ'NE
+
+DAVACI: Tuncay Şahin (T.C. 74859302115)
+DAVALI: Çevre ve Şehircilik Bakanlığı
+
+Davacıya verilen 25.04.2024 tarihli ve 2024/3398 sayılı idari para cezasının iptali talep edilmektedir. Ceza tutarı 67.000 TL'dir. İşlem hukuka aykırıdır.`,
+        expected: [
+            { entity: 'COURT', value: 'DANIŞTAY İLGİLİ DAİRESİ' },
+            { entity: 'PERSON_NAME', value: 'Tuncay Şahin' },
+            { entity: 'TR_NATIONAL_ID', value: '74859302115' },
+            { entity: 'ORGANIZATION', value: 'Çevre ve Şehircilik Bakanlığı' },
+            { entity: 'DATE_TIME', value: '25.04.2024' },
+            { entity: 'CASE_NUMBER', value: '2024/3398' },
+            { entity: 'MONETARY_AMOUNT', value: '67.000 TL' },
+        ],
+    },
+    {
+        name: 'Kredi Kartı Dolandırıcılığı', category: 'ceza',
+        text: `Müşteki Gamze Arslan'ın 4556 1234 0000 1111 numaralı kredi kartıyla, 10.06.2024 tarihinde rızası dışında 19.999 TL'lik harcama yapılmıştır. Şüpheli, kart bilgilerini canan.shop adlı sahte siteden ele geçirmiştir. Müştekinin iletişim: 0535 121 31 41.`,
+        expected: [
+            { entity: 'PERSON_NAME', value: 'Gamze Arslan' },
+            { entity: 'CREDIT_CARD', value: '4556 1234 0000 1111' },
+            { entity: 'DATE_TIME', value: '10.06.2024' },
+            { entity: 'MONETARY_AMOUNT', value: '19.999 TL' },
+            { entity: 'PHONE_NUMBER', value: '0535 121 31 41' },
+        ],
+    },
+    {
+        name: 'Yabancı Şirket Tahkim', category: 'tahkim',
+        text: `Alman uyruklu Klaus Weber'in temsil ettiği Weber GmbH ile Türk şirketi Anadolu İhracat A.Ş. arasındaki uyuşmazlık ICC tahkimine taşınmıştır. Sözleşme bedeli 250.000 EUR olup, ödeme SWIFT kodu DEUTDEFFXXX üzerinden yapılacaktı. Tahkim talebi 15.05.2024 tarihinde sunulmuştur.`,
+        expected: [
+            { entity: 'NATIONALITY', value: 'Alman' },
+            { entity: 'PERSON_NAME', value: 'Klaus Weber' },
+            { entity: 'ORGANIZATION', value: 'Weber GmbH' },
+            { entity: 'ORGANIZATION', value: 'Anadolu İhracat A.Ş.' },
+            { entity: 'MONETARY_AMOUNT', value: '250.000 EUR' },
+            { entity: 'SWIFT_BIC', value: 'DEUTDEFFXXX' },
+            { entity: 'DATE_TIME', value: '15.05.2024' },
+        ],
+    },
+    {
+        name: 'Sosyal Medya / KVKK Şikayeti', category: 'kvkk',
+        text: `Şikayetçi Deniz Acar, "deniz.acar" kullanıcı adıyla kayıtlı olduğu platformda izni olmadan fotoğraflarının paylaşıldığını belirtmiştir. Olay 08.06.2024 tarihinde gerçekleşmiş, paylaşım https://sosyal.example.com/post/9981 adresinde yapılmıştır. Şikayetçinin e-postası deniz.acar@webmail.com, telefonu 0506 778 89 90'dır.`,
+        expected: [
+            { entity: 'PERSON_NAME', value: 'Deniz Acar' },
+            { entity: 'USERNAME', value: 'deniz.acar' },
+            { entity: 'DATE_TIME', value: '08.06.2024' },
+            { entity: 'URL', value: 'https://sosyal.example.com/post/9981' },
+            { entity: 'EMAIL_ADDRESS', value: 'deniz.acar@webmail.com' },
+            { entity: 'PHONE_NUMBER', value: '0506 778 89 90' },
+        ],
+    },
+    {
+        name: 'İcra İflas Takibi', category: 'icra',
+        text: `BURSA 7. İCRA DAİRESİ
+Dosya No: 2024/15567
+
+Alacaklı: Kuzey Lojistik A.Ş.
+Borçlu: Selçuk Yılmaz (T.C. 83746520197)
+Takip türü: İlamsız icra
+Alacak: 320.450 TL
+
+Borçlunun adresi: Çekirge Mah. Defne Sok. No:11 Osmangazi/Bursa. İşbu takibe yedi gün içinde itiraz edilmediği takdirde takip kesinleşecektir.`,
+        expected: [
+            { entity: 'COURT', value: 'Bursa 7. İcra Dairesi' },
+            { entity: 'ENFORCEMENT_ID', value: '2024/15567' },
+            { entity: 'ORGANIZATION', value: 'Kuzey Lojistik A.Ş.' },
+            { entity: 'PERSON_NAME', value: 'Selçuk Yılmaz' },
+            { entity: 'TR_NATIONAL_ID', value: '83746520197' },
+            { entity: 'MONETARY_AMOUNT', value: '320.450 TL' },
+            { entity: 'ADDRESS', value: 'Çekirge Mah. Defne Sok. No:11 Osmangazi/Bursa' },
+        ],
+    },
+    {
+        name: 'ALL CAPS Dilekçe Başlığı', category: 'dava',
+        text: `İSTANBUL 9. ASLİYE HUKUK MAHKEMESİ'NE
+
+DAVACI : MURAT ÖZTÜRK (T.C. 91827364550)
+VEKİLİ : AV. SEDA YILMAZ
+DAVALI : KARDELEN İNŞAAT LTD. ŞTİ.
+KONU : 175.000 TL ALACAĞIN TAHSİLİ
+
+Müvekkil ile davalı arasında 12.02.2024 tarihinde imzalanan sözleşme gereği teslim edilen mala ilişkin bedel ödenmemiştir.`,
+        expected: [
+            { entity: 'COURT', value: 'İSTANBUL 9. ASLİYE HUKUK MAHKEMESİ' },
+            { entity: 'PERSON_NAME', value: 'MURAT ÖZTÜRK' },
+            { entity: 'TR_NATIONAL_ID', value: '91827364550' },
+            { entity: 'PERSON_NAME', value: 'SEDA YILMAZ' },
+            { entity: 'ORGANIZATION', value: 'KARDELEN İNŞAAT LTD. ŞTİ.' },
+            { entity: 'MONETARY_AMOUNT', value: '175.000 TL' },
+            { entity: 'DATE_TIME', value: '12.02.2024' },
+        ],
+    },
+    {
+        name: 'Genel Hukuki Bilgi (PII yok)', category: 'negatif',
+        text: `Türk Borçlar Kanunu uyarınca sözleşmeler, tarafların karşılıklı ve birbirine uygun irade beyanlarıyla kurulur. Bir sözleşmenin geçerliliği, kanunda aksi öngörülmedikçe hiçbir şekle bağlı değildir. Genel işlem koşullarının denetimi, dürüstlük kuralı çerçevesinde yapılır. Bu metin yalnızca genel bilgilendirme amaçlıdır ve herhangi bir kişisel veri içermemektedir.`,
+        expected: [],
+    },
+    {
+        name: 'Sigorta Tazminat Reddi', category: 'sigorta',
+        text: `Sigortalı Ferhat Koç'un (T.C. 19283746551) konut sigortası poliçesi kapsamındaki 28.05.2024 tarihli su baskını hasarı reddedilmiştir. Poliçe No: KNT-2024-882130. Talep edilen hasar bedeli 210.000 TL'dir. Sigorta şirketi: Güneş Sigorta A.Ş. Eksper raporuna göre hasar teminat dışıdır.`,
+        expected: [
+            { entity: 'PERSON_NAME', value: 'Ferhat Koç' },
+            { entity: 'TR_NATIONAL_ID', value: '19283746551' },
+            { entity: 'DATE_TIME', value: '28.05.2024' },
+            { entity: 'POLICY_NUMBER', value: 'KNT-2024-882130' },
+            { entity: 'MONETARY_AMOUNT', value: '210.000 TL' },
+            { entity: 'ORGANIZATION', value: 'Güneş Sigorta A.Ş.' },
+        ],
+    },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────
