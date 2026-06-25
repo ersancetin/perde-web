@@ -8,7 +8,11 @@ All notable changes to Perde Web are documented here.
 - **Holdout grown 34 → 50 docs** (added property, family, tax, consumer, foreign-company arbitration, social-media KVKK, enforcement, ALL-CAPS petition, and a no-PII negative case). First-run coverage recall on the 50-doc set was 98.1%; gaps were then fixed and locked with regression tests, raising **masking-coverage recall to 99.5%** (F1 99.5%).
 - New detections: disability phrasing `%NN oranında (sürekli) iş göremezlik`; foreign company suffix `GmbH`; contextual usernames (`kullanıcı "burak_demir35"`, `"deniz.acar" kullanıcı adıyla`, `kullanıcı adı: x` — handle-like guard, low FP); first name `Tuncay`.
 - Fewer false positives: `Türk/yabancı şirketi` no longer mis-detected as ORGANIZATION.
-- **Discipline:** a `tahkim merkezi` org suffix that helped the holdout but regressed the co-developed benchmark (absorbed `İstanbul` LOCATION) was **reverted** — benchmark held at Micro F1 **97.5%**. Unit tests 2228 → **2237**.
+- **Discipline:** a `tahkim merkezi` org suffix that helped the holdout but regressed the co-developed benchmark (absorbed `İstanbul` LOCATION) was **reverted** — benchmark held at Micro F1 **97.5%**.
+
+### Changed — precision (less over-masking)
+- **Top national high courts/institutions are no longer masked** — Yargıtay, Danıştay, Anayasa Mahkemesi, Avrupa İnsan Hakları Mahkemesi, Sayıştay, Uyuşmazlık Mahkemesi. These are public bodies, not personal data; masking them in legal citations (`Yargıtay içtihadına göre…`) stripped context the AI needs with zero privacy benefit. **City-specific and Bölge Adliye/İdare (istinaf) courts stay masked** (they hint venue/location). A non-PII legal-text precision probe now reports **0 false positives**.
+- Unit tests 2228 → **2244**.
 
 ## [0.2.0-beta] — 2026-06-24
 

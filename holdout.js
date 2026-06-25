@@ -721,7 +721,6 @@ DAVALI: Çevre ve Şehircilik Bakanlığı
 
 Davacıya verilen 25.04.2024 tarihli ve 2024/3398 sayılı idari para cezasının iptali talep edilmektedir. Ceza tutarı 67.000 TL'dir. İşlem hukuka aykırıdır.`,
         expected: [
-            { entity: 'COURT', value: 'DANIŞTAY İLGİLİ DAİRESİ' },
             { entity: 'PERSON_NAME', value: 'Tuncay Şahin' },
             { entity: 'TR_NATIONAL_ID', value: '74859302115' },
             { entity: 'ORGANIZATION', value: 'Çevre ve Şehircilik Bakanlığı' },

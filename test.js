@@ -1865,7 +1865,8 @@ Başvuru Tarihi: 15.02.2024`;
 const anayasaF = analyzeText(anayasaBireysel, ALL, 0.35);
 console.log(`  Anayasa Mahkemesi bireysel başvuru: ${anayasaF.length} bulgu`);
 
-expect(anayasaBireysel, 'COURT', 'Anayasa Mahkemesi');
+// Ulusal yüksek mahkemeler PII değil — maskelenmez (hukuki bağlam korunur)
+expectNot(anayasaBireysel, 'COURT', 'Anayasa Mahkemesi');
 expect(anayasaBireysel, 'PERSON_NAME', 'İbrahim Güler');
 expect(anayasaBireysel, 'PERSON_NAME', 'Deniz Arslan');
 expect(anayasaBireysel, 'TR_NATIONAL_ID', '10000000146');
@@ -2044,7 +2045,7 @@ expect('Ümit Çelik adlı şahıs', 'PERSON_NAME', 'Ümit Çelik');
 // Türkçe mahkeme isimlerinde ek (dative -ne, locative -nde)
 expect('İstanbul Aile Mahkemesine başvurdu', 'COURT', 'Aile Mahkemesi');
 expect('Ankara İcra Müdürlüğünden bilgi alındı', 'ORGANIZATION', 'İcra Müdürlüğü');
-expect('Yargıtayın kararı bekleniyor', 'ORGANIZATION', 'Yargıtay');
+expectNot('Yargıtayın kararı bekleniyor', 'ORGANIZATION', 'Yargıtay');
 
 // Org isimlerinde Türkçe ek (ablative -dan, locative -da)
 expect('SGK\'dan rapor istendi', 'ORGANIZATION', 'SGK');
@@ -3933,7 +3934,7 @@ OYBİRLİĞİYLE karar verilmiştir.`;
 const aymIF = analyzeText(aymIptal, ALL, 0.35);
 console.log(`  AYM iptal kararı KTK m.90: ${aymIF.length} bulgu`);
 
-expect(aymIptal, 'COURT', 'ANAYASA MAHKEMESİ');
+expectNot(aymIptal, 'COURT', 'ANAYASA MAHKEMESİ');
 expect(aymIptal, 'CASE_NUMBER', '2021/82');
 expect(aymIptal, 'CASE_NUMBER', '2022/167');
 expect(aymIptal, 'CONTEXTUAL_DATE', '29.12.2022');
@@ -4821,8 +4822,8 @@ expect(vekaletname2, 'PERSON_NAME', 'Baran Demir');
 expect(vekaletname2, 'TR_NATIONAL_ID', '22222222220');
 expect(vekaletname2, 'ORGANIZATION', 'Ankara Barosu');
 expect(vekaletname2, 'PHONE_NUMBER', '0312 444 33 22');
-expect(vekaletname2, 'ORGANIZATION', 'Yargıtay');
-expect(vekaletname2, 'COURT', 'Anayasa Mahkemesi');
+expectNot(vekaletname2, 'ORGANIZATION', 'Yargıtay');
+expectNot(vekaletname2, 'COURT', 'Anayasa Mahkemesi');
 expect(vekaletname2, 'DATE_TIME', '10.01.2024');
 
 // ============================================================
@@ -5803,7 +5804,7 @@ expect('Çalışan No: EMP-2026-001', 'EMPLOYEE_ID', 'EMP-2026-001');
 console.log('\n=== COURT vs ORGANIZATION ===');
 expect('İstanbul 3. Asliye Hukuk Mahkemesi', 'COURT', 'İstanbul 3. Asliye Hukuk Mahkemesi');
 expect('Ankara 2. İş Mahkemesi', 'COURT', 'Ankara 2. İş Mahkemesi');
-expect('Yargıtay 17. Hukuk Dairesi', 'COURT', 'Yargıtay 17. Hukuk Dairesi');
+expectNot('Yargıtay 17. Hukuk Dairesi', 'COURT', 'Yargıtay 17. Hukuk Dairesi');
 expect('Axa Sigorta A.Ş.', 'ORGANIZATION', 'Axa Sigorta');
 expect('İstanbul Barosu', 'ORGANIZATION', 'İstanbul Barosu');
 
@@ -7102,6 +7103,16 @@ expect('Etkilenen kullanıcı "burak_demir35" hesabına aittir', 'USERNAME', 'bu
 expect('Kullanıcı adı: ahmet_2024 olarak görünmektedir', 'USERNAME', 'ahmet_2024');
 // FP guard: düz kelime (rakam/nokta/alt-çizgi yok) username olmamalı
 expectNot('Kullanıcı adı müşteri tarafından girilmemiştir', 'USERNAME', 'müşteri');
+
+// Ulusal yüksek mahkemeler/kurumlar PII değil — maskelenmez (aşırı-maskeleme azaltma)
+expectNot('Danıştay 10. Dairesi iptal kararı vermiştir', 'COURT', 'Danıştay 10. Dairesi');
+expectNot('Sayıştay denetim raporunu yayımladı', 'ORGANIZATION', 'Sayıştay');
+expectNot('Avrupa İnsan Hakları Mahkemesi ihlal kararı verdi', 'COURT', 'Avrupa İnsan Hakları Mahkemesi');
+expectNot('Yargıtay Hukuk Genel Kurulu kararına göre ispat yükü', 'ORGANIZATION', 'Yargıtay');
+expectNot('Uyuşmazlık Mahkemesi görevli yargı yerini belirledi', 'COURT', 'Uyuşmazlık Mahkemesi');
+// Ama Bölge (istinaf) ve şehir-özel mahkemeler MASKELİ kalır
+expect('İstanbul Bölge Adliye Mahkemesi 3. Hukuk Dairesi kararı', 'COURT', 'İstanbul Bölge Adliye Mahkemesi 3. Hukuk Dairesi');
+expect('Ankara 5. Aile Mahkemesi davayı reddetti', 'COURT', 'Ankara 5. Aile Mahkemesi');
 
 // ============================================================
 // AI WORKFLOW TESTS (ai-workflow.js + prompts.js)

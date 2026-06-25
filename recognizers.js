@@ -1101,6 +1101,24 @@ function analyzeText(text, enabledEntities, scoreThreshold = 0.35) {
         if (insideIban) allFindings.splice(i, 1);
     }
 
+    // Suppress only the TOP national high courts/institutions (Yargıtay, Danıştay, Anayasa
+    // Mahkemesi, AİHM, Sayıştay, Uyuşmazlık Mahkemesi). These are public bodies, NOT personal
+    // data; masking them in legal citations ("Yargıtay içtihadına göre…") strips context the
+    // AI needs and gives zero privacy benefit. Bölge Adliye/İdare (istinaf) and city-prefixed
+    // courts (e.g. "İstanbul Bölge Adliye Mahkemesi") are NOT here and stay masked.
+    const GENERIC_INSTITUTIONS = [
+        'yargıtay', 'danıştay', 'anayasa mahkemesi', 'avrupa insan hakları mahkemesi',
+        'sayıştay', 'uyuşmazlık mahkemesi',
+    ];
+    for (let i = allFindings.length - 1; i >= 0; i--) {
+        const f = allFindings[i];
+        if (f.entity !== 'COURT' && f.entity !== 'ORGANIZATION') continue;
+        const v = trLower(f.value).trim();
+        if (GENERIC_INSTITUTIONS.some(g => v === g || v.startsWith(g + ' ') || v.startsWith(g + "'"))) {
+            allFindings.splice(i, 1);
+        }
+    }
+
     // Deduplication & overlap resolution (Presidio's algorithm)
     let results = removeDuplicates(allFindings);
 
