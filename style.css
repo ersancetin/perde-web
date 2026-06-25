@@ -677,6 +677,10 @@ textarea::placeholder { color: #b5b3ab; }
 
 /* ─── Responsive ─── */
 @media (max-width: 768px) {
+    /* iOS/mobil: font-size < 16px olan alanlar odakta otomatik yakınlaşır ("kayma"
+       hissi). 16px ile auto-zoom engellenir (pinch-zoom serbest kalır). */
+    input, textarea, select, .ai-textarea, .ai-option input, .ai-option select,
+    .setting-item select, .findings-search, .findings-filter, .entity-search { font-size: 16px !important; }
     .container { padding: 0 14px; }
     #inputView { min-height: auto; padding: 24px 0 20px; }
     .hero { padding: 0 0 20px; }
