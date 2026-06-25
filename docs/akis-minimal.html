@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Spline+Sans+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#e7eaec; --ink:#1d1f21; --ink2:#5e6266; --ink3:#9aa0a3;
+    --card:#ffffff; --line:#dde1e3; --hair:#d4d8da;
+    --sage:#3c7a52; --clay:#b0432f; --blue:#3f608f;
+  }
+  html,body{width:1280px;height:720px}
+  body{ font-family:'Hanken Grotesk',sans-serif; color:var(--ink);
+    background:radial-gradient(120% 130% at 50% -20%, #eef1f2, #e4e7e9); position:relative; overflow:hidden; }
+
+  h1{ position:absolute; left:64px; top:62px; font-size:38px; font-weight:800; letter-spacing:-.02em; }
+  .sub{ position:absolute; left:64px; top:114px; font-size:16px; color:var(--ink2); }
+  .rule{ position:absolute; left:64px; top:150px; width:1152px; height:1px; background:var(--hair); }
+
+  .zone{ position:absolute; top:186px; display:flex; align-items:center; gap:8px;
+    font-size:12px; font-weight:700; letter-spacing:.13em; text-transform:uppercase; }
+  .zone small{ font-weight:500; letter-spacing:.02em; text-transform:none; color:var(--ink3); font-size:12.5px; }
+  .zone.local{ left:64px; color:var(--sage); }
+  .zone.ext{ left:912px; color:var(--clay); }
+
+  .card{ position:absolute; width:252px; height:114px; border-radius:14px; padding:16px 18px;
+    background:var(--card); border:1px solid var(--line); }
+  .num{ width:25px; height:25px; border-radius:50%; border:1.5px solid var(--ink);
+    display:inline-flex; align-items:center; justify-content:center; font-size:13px; font-weight:700;
+    color:var(--ink); vertical-align:middle; }
+  .num.sg{ border-color:var(--sage); color:var(--sage); }
+  .ttl{ display:inline-block; vertical-align:middle; margin-left:10px; font-size:16px; font-weight:700; letter-spacing:-.01em; }
+  .d{ font-size:13px; color:var(--ink2); line-height:1.5; margin-top:11px; }
+  .d.mut{ color:var(--ink3); margin-top:2px; }
+  .tok{ font-family:'Spline Sans Mono',monospace; font-size:12px; font-weight:600; color:var(--blue); margin-top:9px; display:inline-block; }
+  .tok.sg{ color:var(--sage); }
+  .card.resolve{ background:#f1f7f3; border-color:#c4ddcc; }
+  .card.note{ background:transparent; border:1px dashed var(--hair); }
+  .note .nt{ font-size:13px; font-weight:700; color:var(--ink2); }
+  .note .nd{ font-size:12.5px; color:var(--ink3); line-height:1.55; margin-top:9px; }
+
+  .aicard{ position:absolute; left:916px; top:300px; width:300px; height:158px; border-radius:16px;
+    background:var(--card); border:1px solid var(--line);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:7px; }
+  .aicard b{ font-size:19px; font-weight:700; }
+  .aicard span{ font-size:12.5px; color:var(--ink3); }
+
+  /* footer — limits as chips */
+  .frule{ position:absolute; left:64px; top:622px; width:1152px; height:1px; background:var(--hair); }
+  .limits{ position:absolute; left:64px; top:644px; display:flex; align-items:center; gap:10px; }
+  .limits .lbl{ font-size:11px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--ink3); margin-right:2px; }
+  .chip{ display:inline-flex; align-items:center; gap:7px; padding:6px 13px; border:1px solid var(--hair);
+    border-radius:999px; font-size:13px; color:var(--ink2); background:rgba(255,255,255,.5); }
+  .chip .d0{ width:5px; height:5px; border-radius:50%; background:var(--clay); flex:0 0 auto; }
+  .chip.key{ border-color:#e2b9b0; color:var(--clay); font-weight:600; background:rgba(176,67,47,.05); }
+  .url{ position:absolute; left:64px; top:686px; font-size:12px; color:var(--ink3); letter-spacing:.03em; }
+  .brand{ position:absolute; right:64px; top:648px; font-size:16px; font-weight:800; color:var(--ink); text-align:right; }
+  .brand small{ display:block; font-size:11px; font-weight:600; color:var(--ink3); margin-top:2px; letter-spacing:.04em; }
+
+  .xlabel{ position:absolute; left:864px; top:258px; font-size:12px; font-weight:600; color:var(--ink2); }
+</style>
+</head>
+<body>
+  <h1>Perde Web — yerel maskeleme akışı</h1>
+  <div class="sub">Kişisel veriler tarayıcıdan çıkmadan yapay zekaya hazırlanır; yanıt yine tarayıcıda çözülür.</div>
+  <div class="rule"></div>
+
+  <div class="zone local">
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#3c7a52" stroke-width="1.5"><rect x="3" y="7" width="10" height="7" rx="1.6" fill="#3c7a52" stroke="none"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></svg>
+    Cihazınız <small>— tarayıcı · internet yok</small>
+  </div>
+  <div class="zone ext">
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#b0432f" stroke-width="1.35"><circle cx="8" cy="8" r="6.6"/><path d="M1.4 8h13.2M8 1.4v13.2"/><ellipse cx="8" cy="8" rx="3" ry="6.6"/></svg>
+    Harici yapay zeka
+  </div>
+
+  <!-- top row -->
+  <div class="card" style="left:64px; top:222px;">
+    <span class="num">1</span><span class="ttl">Belge</span>
+    <div class="d">PDF · DOCX · UDF · metin</div><div class="d mut">"…Ahmet Yılmaz, X A.Ş.…"</div>
+  </div>
+  <div class="card" style="left:332px; top:222px;">
+    <span class="num">2</span><span class="ttl">Yerel analiz</span>
+    <div class="d">100+ veri türü tespiti</div><div class="d mut">kişi · TCKN · IBAN · adres</div>
+  </div>
+  <div class="card" style="left:600px; top:222px;">
+    <span class="num">3</span><span class="ttl">Tokenlı prompt</span>
+    <div class="d">geri döndürülebilir token</div><span class="tok">[KISI_1] · [KURUM_2]</span>
+  </div>
+
+  <!-- bottom row -->
+  <div class="card resolve" style="left:64px; top:436px;">
+    <span class="num sg">6</span><span class="ttl">Yerel geri çözüm</span>
+    <div class="d">token → gerçek değer</div><span class="tok sg">[KISI_1] → Ahmet Yılmaz</span>
+  </div>
+  <div class="card" style="left:332px; top:436px;">
+    <span class="num">5</span><span class="ttl">Yanıtı yapıştır</span>
+    <div class="d">AI cevabı tarayıcıya döner</div><div class="d mut">[KISI_1] hâlâ tokenlı</div>
+  </div>
+  <div class="card note" style="left:600px; top:436px;">
+    <div class="nt">Etiket haritası</div>
+    <div class="nd">yalnızca cihazınızda · AI'a gitmez · silinebilir</div>
+  </div>
+
+  <div class="aicard"><b>ChatGPT · Claude</b><b style="margin-top:-4px">Gemini …</b><span>yalnızca maskeli metin gider</span></div>
+  <div class="xlabel">4 · siz kopyalar-yapıştırırsınız</div>
+
+  <svg style="position:absolute;left:0;top:0" width="1280" height="720">
+    <defs>
+      <marker id="ar" markerWidth="9" markerHeight="9" refX="6.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#aeb3b6"/></marker>
+      <marker id="ag" markerWidth="9" markerHeight="9" refX="6.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#3c7a52"/></marker>
+    </defs>
+    <line x1="318" y1="279" x2="330" y2="279" stroke="#aeb3b6" stroke-width="2" marker-end="url(#ar)"/>
+    <line x1="586" y1="279" x2="598" y2="279" stroke="#aeb3b6" stroke-width="2" marker-end="url(#ar)"/>
+    <path d="M852 279 H1066 V298" fill="none" stroke="#aeb3b6" stroke-width="2" marker-end="url(#ar)"/>
+    <path d="M1066 458 V493 H586" fill="none" stroke="#aeb3b6" stroke-width="2" marker-end="url(#ar)"/>
+    <line x1="330" y1="493" x2="318" y2="493" stroke="#3c7a52" stroke-width="2" marker-end="url(#ag)"/>
+    <line x1="884" y1="196" x2="884" y2="560" stroke="#b0432f" stroke-width="1.3" stroke-dasharray="2 7" stroke-linecap="round" opacity="0.45"/>
+  </svg>
+
+  <!-- footer limits -->
+  <div class="frule"></div>
+  <div class="limits">
+    <span class="lbl">Sınırlar</span>
+    <span class="chip key"><span class="d0"></span>KVKK garantisi değil</span>
+    <span class="chip"><span class="d0"></span>tam anonimleştirme değil</span>
+    <span class="chip"><span class="d0"></span>çıktıyı avukat kontrol etmeli</span>
+  </div>
+  <div class="url">açık kaynak · tamamen tarayıcıda · ersancetin.github.io/perde-web</div>
+  <div class="brand">perde<span style="color:#b0432f">.web</span><small>v0.2.0-beta</small></div>
+</body>
+</html>
