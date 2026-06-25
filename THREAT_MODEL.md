@@ -21,7 +21,7 @@ What we are trying to protect:
 
 The trust boundary is the **browser origin** running the page.
 
-- **Inside the boundary:** the user's device, the browser tab, the page's JavaScript, the in-memory state (findings, de-anonymization map, prompt text).
+- **Inside the boundary:** the user's device, the browser tab, the page's JavaScript, the in-memory and on-device state (findings, de-anonymization map in localStorage, prompt text).
 - **Outside the boundary:** any network endpoint. Perde is designed so that document content **never crosses** this boundary on its own.
 - **Static hosting:** GitHub Pages serves the static files and logs standard access metadata (IP, User-Agent). This metadata describes *access to the site*, not document content.
 
@@ -35,13 +35,13 @@ Browser parsing (PDF.js / JSZip / Tesseract OCR) ── all local
       ▼
 NER engine (Web Worker) ── all local, no network
       ▼
-Findings + masked output ── in memory only
-      │
+Findings + masked output ── in memory; de-anon token map saved to
+      │                         localStorage (this device only, user can clear)
       ├─► Download (TXT / JSON report) ── local file, user-initiated
       │
       └─► AI workflow:
              Anonymized prompt ──(user copies + pastes)──► external AI  ← ONLY exit point
-             De-anonymization map ── stays in memory, never sent
+             De-anon map ── saved on device (localStorage), never sent
              AI response ──(user pastes back)──► local de-anonymization
 ```
 
@@ -62,7 +62,7 @@ Findings + masked output ── in memory only
 **In scope (design goals):**
 - Detecting and masking PII entirely client-side.
 - Preventing the page from sending document content to any server.
-- Keeping the de-anonymization map and reports local and ephemeral.
+- Keeping the de-anonymization map and reports on-device and user-clearable (never sent anywhere).
 
 **Out of scope (explicit non-goals):**
 - Guaranteeing complete anonymization or KVKK compliance.
@@ -76,7 +76,7 @@ Findings + masked output ── in memory only
 |--------|-----------|
 | Content exfiltration via network request | No application code issues outbound requests with content. **Content Security Policy** (`default-src 'self'`, no external `connect/script/img/font`) makes the browser block exfiltration attempts. |
 | Third-party / CDN supply chain | All libraries (PDF.js, Tesseract.js, JSZip) are **self-hosted** in `lib/`; no external CDN, font, or analytics. |
-| Persistent leakage on shared device | No cookies; no document/PII written to `localStorage`. De-anonymization map is in-memory only and cleared on reset/new document/tab close. |
+| Persistent leakage on shared device | No cookies; the original document text is never written to storage. The **de-anonymization token map** (token → real value) *is* saved to `localStorage` so the AI reply can be decoded after a reload — it stays on the device, is never sent anywhere, is overwritten on a new document, and can be wiped with **Temizle**. On a shared/public computer the user should clear it when done. |
 | De-anonymization map sent to AI | The map is never embedded in the prompt; the token legend is explicitly not copied with "Copy prompt". |
 | Detection report mishandling | Export is user-initiated, warns that it contains real PII, and is a local file only. |
 | Incomplete masking → leak to AI | Pre-send "final check" panel shows masked types, flags **open (kept) data**, low-confidence detections, and un-OCR'd pages; persistent reminder to review before copying. |
@@ -96,8 +96,8 @@ These remain and must be managed by the user:
 ## 8. Security properties summary
 
 - **No outbound content:** enforced by design + CSP.
-- **No persistence:** no cookies, no PII in storage, ephemeral in-memory map.
+- **Minimal persistence:** no cookies; the document text is never stored. Only the de-anon token map is saved to `localStorage` (this device only, never sent anywhere, clearable with Temizle).
 - **No third parties:** self-hosted libraries, no CDN/analytics/trackers.
-- **Open source & tested:** 2226 unit tests, a co-developed benchmark, and an independent holdout set, all gated in CI.
+- **Open source & tested:** 2247 unit tests, a co-developed benchmark, and an independent holdout set, all gated in CI.
 
 For the user-facing summary in Turkish, see [gizlilik.html](gizlilik.html). For the code, see the repository.

@@ -14,7 +14,7 @@ Turkce hukuk belgeleri icin kisisel veri tespiti ve maskeleme yardimcisi. Tamame
 - Zero third-party requests — all processing runs locally in the browser
 - Multiple anonymization methods: replace, mask, partial, redact, pseudonymize (HMAC-SHA-256)
 - 8 preset profiles: Temel, Hukuk, Finans, Saglik, KVKK, Teknik, Uluslararasi, Tumu
-- AI workflow: reversible pseudonymization (`[KISI_1]` tokens) + a legal prompt library with anti-hallucination guardrails, then de-anonymization of the AI response — round-trip mapping stays in-memory only and never leaves the browser
+- AI workflow: reversible pseudonymization (`[KISI_1]` tokens) + a legal prompt library with anti-hallucination guardrails, then de-anonymization of the AI response — the round-trip token map is saved in this browser's local storage (so you can decode the AI reply after a reload) and never leaves your device; clear it anytime with **Temizle**
 - Manual text selection masking with Ctrl+M shortcut
 - Drag-and-drop file upload
 - Configurable confidence threshold and per-entity toggles
@@ -45,7 +45,7 @@ The panel is deliberately minimal: advanced options (party/language/extra instru
 
 Every prompt includes guardrails instructing the model to (a) preserve the tokens verbatim and not invent new ones, and (b) avoid fabricating case law / statute citations and flag anything that must be verified.
 
-**Limits (important):** This reduces risk; it is not a guarantee. The de-anonymization map is held in memory only (cleared on reset/new document) and is never sent anywhere. Anonymization quality is bounded by the detector — a missed identifier still leaks, and the narrative content of a case can remain identifiable even when names are masked. The anti-hallucination prompts lower but do not eliminate fabricated citations; all AI output must be verified by a lawyer.
+**Limits (important):** This reduces risk; it is not a guarantee. The de-anonymization map (token → real value) is saved in this browser's `localStorage` so the AI reply can still be decoded after a page reload — it stays on your device, is never sent anywhere, and can be wiped with **Temizle**. The original document text is never stored. On a shared/public computer, clear it when done. Anonymization quality is bounded by the detector — a missed identifier still leaks, and the narrative content of a case can remain identifiable even when names are masked. The anti-hallucination prompts lower but do not eliminate fabricated citations; all AI output must be verified by a lawyer.
 
 ## Development
 

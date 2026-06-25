@@ -7,7 +7,7 @@
     <meta name="referrer" content="no-referrer">
     <title>Gizlilik ve Güvenlik · Perde Web</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='4' y='14' width='24' height='16' rx='3' fill='%231a1917'/><path d='M10 14V10a6 6 0 0 1 12 0v4' fill='none' stroke='%231a1917' stroke-width='3' stroke-linecap='round'/><circle cx='16' cy='22' r='2.5' fill='%23fff'/></svg>">
-    <link rel="stylesheet" href="style.css?v=26.0">
+    <link rel="stylesheet" href="style.css?v=27.0">
 </head>
 <body>
     <header>
@@ -28,11 +28,11 @@
     <main>
         <div class="doc-page">
             <h1 class="doc-title">Gizlilik ve Güvenlik</h1>
-            <p class="doc-lead">Perde Web, hukuk belgelerindeki kişisel verileri <strong>tamamen tarayıcınızda</strong> tespit edip maskeler. Belgeniz bilgisayarınızdan çıkmaz, hiçbir sunucuya gönderilmez, hiçbir yere kaydedilmez.</p>
+            <p class="doc-lead">Perde Web, hukuk belgelerindeki kişisel verileri <strong>tamamen tarayıcınızda</strong> tespit edip maskeler. Belgeniz bilgisayarınızdan çıkmaz, hiçbir sunucuya gönderilmez. (Yapay zeka cevabını sonradan geri çözebilmeniz için yalnızca bir etiket haritası bu tarayıcıda saklanır — aşağıda; istediğinizde silebilirsiniz.)</p>
 
             <div class="doc-tldr">
                 <div class="doc-tldr-item"><span class="doc-check">✓</span> Belge sunucuya gönderilmez</div>
-                <div class="doc-tldr-item"><span class="doc-check">✓</span> Hiçbir veri saklanmaz</div>
+                <div class="doc-tldr-item"><span class="doc-check">✓</span> Veriler cihazınızdan çıkmaz</div>
                 <div class="doc-tldr-item"><span class="doc-check">✓</span> İzleme/analitik yok</div>
             </div>
 
@@ -43,10 +43,11 @@
                 <li><strong>Üçüncü taraf isteği yoktur:</strong> harici CDN, yazı tipi, analitik aracı veya izleme çerezi kullanılmaz. Bu, sayfanın İçerik Güvenliği Politikası (CSP) ile teknik olarak <strong>zorunlu kılınmıştır</strong> — tarayıcı, siteden başka bir adrese veri göndermeyi engeller.</li>
             </ul>
 
-            <h2 class="doc-h2">Hiçbir şey saklanmaz</h2>
+            <h2 class="doc-h2">Cihazınızda ne saklanır?</h2>
             <ul class="doc-list">
-                <li>Çerez kullanılmaz; belgeniz veya kişisel veriler tarayıcı deposuna (localStorage vb.) yazılmaz.</li>
-                <li>Anonimleştirme eşleştirmesi (örn. <code>[KISI_1] → Ahmet Yılmaz</code>) yalnızca <strong>açık sekmenin geçici belleğinde</strong> tutulur. Sekmeyi kapattığınızda ya da "Yeni Belge" dediğinizde silinir; kalıcı bir kayıt oluşmaz.</li>
+                <li>Çerez kullanılmaz; <strong>belgenizin metni</strong> hiçbir depoya (localStorage vb.) yazılmaz.</li>
+                <li>Tek istisna: yapay zeka cevabını sonradan geri çözebilmeniz için <strong>etiket → gerçek değer haritası</strong> (örn. <code>[KISI_1] → Ahmet Yılmaz</code>) bu tarayıcının yerel deposunda (localStorage) saklanır. Böylece sekmeyi kapatıp açsanız bile cevabı çözebilirsiniz.</li>
+                <li>Bu harita <strong>cihazınızda kalır, hiçbir yere gönderilmez</strong>. Ana ekrandaki <strong>Temizle</strong> ile silebilir, "Yeni Belge" ile değiştirebilirsiniz. Ortak/halka açık bir bilgisayarda işiniz bitince temizlemeniz önerilir.</li>
             </ul>
 
             <h2 class="doc-h2">Yapay zeka kullanırken veri ne zaman dışarı çıkar?</h2>

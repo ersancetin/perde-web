@@ -7,7 +7,7 @@
     <meta name="referrer" content="no-referrer">
     <title>Perde Web</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect x='4' y='14' width='24' height='16' rx='3' fill='%231a1917'/><path d='M10 14V10a6 6 0 0 1 12 0v4' fill='none' stroke='%231a1917' stroke-width='3' stroke-linecap='round'/><circle cx='16' cy='22' r='2.5' fill='%23fff'/></svg>">
-    <link rel="stylesheet" href="style.css?v=26.0">
+    <link rel="stylesheet" href="style.css?v=27.0">
 </head>
 <body>
     <header>
@@ -121,6 +121,23 @@
                     </div>
                     <div id="entityToggles" class="toggles-container"></div>
                     <span class="entity-counter" id="entityTotalBadge"></span>
+                </div>
+
+                <div id="savedMapBar" class="saved-map" style="display:none;">
+                    <div class="saved-map-head">
+                        <span class="saved-map-title">🔒 Kayıtlı geri-çözme haritası <span id="savedMapCount"></span></span>
+                        <button id="savedMapClear" class="btn-text btn-xs">Temizle</button>
+                    </div>
+                    <p class="saved-map-desc">Son maskelediğin belgenin haritası bu tarayıcıda saklı. Yapay zekadan gelen cevabı yapıştır, gerçek değerleri geri al. İşin bitince <b>Temizle</b>.</p>
+                    <textarea id="savedMapResponse" class="saved-map-textarea" placeholder="Yapay zekadan gelen cevabı buraya yapıştırın..."></textarea>
+                    <button id="savedMapDeanon" class="btn-primary">Cevabı Çöz</button>
+                    <div id="savedMapResultWrap" style="display:none;">
+                        <div id="savedMapResult" class="saved-map-result"></div>
+                        <div class="saved-map-actions">
+                            <span id="savedMapStats" class="saved-map-stats"></span>
+                            <button id="savedMapCopy" class="btn-text btn-xs">Sonucu kopyala</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -265,6 +282,6 @@
     <script src="anonymizer.js?v=15.0"></script>
     <script src="ai-workflow.js?v=1.1"></script>
     <script src="prompts.js?v=2.3"></script>
-    <script src="app.js?v=22.0"></script>
+    <script src="app.js?v=23.0"></script>
 </body>
 </html>

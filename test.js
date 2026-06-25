@@ -7274,6 +7274,22 @@ function aiwfFindAt(text, val, from) { const i = text.indexOf(val, from || 0); r
     checkAI(txt.includes('[MASKELENECEK] Kişi: Ahmet') && txt.includes('[KORUNACAK]') && txt.includes('UYARI'), 'TXT rapor formatı doğru');
 }
 
+// Geri-çözme haritası kalıcılığı: Map -> JSON -> Map roundtrip sonrası de-anon çalışmalı
+{
+    const findings = [
+        { entity: 'PERSON_NAME', value: 'Ahmet Yılmaz', start: 0, end: 12 },
+        { entity: 'ORGANIZATION', value: 'X A.Ş.', start: 20, end: 26 },
+    ];
+    const src = 'Ahmet Yılmaz ve onun X A.Ş. şirketi';
+    const { map } = buildPseudonymized(src, findings, () => false, {}, { PERSON_NAME: 'Kişi', ORGANIZATION: 'Kurum' });
+    // localStorage simülasyonu: serialize + restore
+    const restored = new Map(JSON.parse(JSON.stringify([...map])));
+    checkAI(restored.size === map.size, 'Harita serialize/restore boyutu korur');
+    const r = deAnonymize('[KISI_1] ve [KURUM_1] görüştü.', restored);
+    checkAI(r.text.includes('Ahmet Yılmaz') && r.text.includes('X A.Ş.'), 'Restore edilmiş haritayla de-anon çalışır');
+    checkAI(r.resolved === 2 && r.leftover.length === 0, 'Restore sonrası tüm etiketler çözülür');
+}
+
 // ============================================================
 // RESULTS
 // ============================================================

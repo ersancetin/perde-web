@@ -948,7 +948,7 @@ document.addEventListener('DOMContentLoaded', () => {
     inputText.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') analyzeBtn.click(); });
 
     // ─── Yapay Zeka İş Akışı (anonimleştir → prompt → çöz) ───
-    let aiReverseMap = new Map(); // token -> orijinal değer (yalnızca bellekte)
+    let aiReverseMap = new Map(); // token -> orijinal değer (bellek + localStorage'a yedeklenir)
 
     // asciiToken / buildPseudonymized / deAnonymize artık ai-workflow.js'te
     // (DOM-bağımsız, birim testli). Burada yalnızca çağrılırlar.
@@ -1009,6 +1009,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!lastFindings.length) return;
         const { text, map } = buildPseudonymized(lastText, lastFindings, isKept, FRIENDLY_LABELS, ENTITY_LABELS);
         aiReverseMap = map;
+        // Geri-çözme haritasını tarayıcıya kaydet: sekme yenilense/kapansa da
+        // AI cevabı sonradan çözülebilsin (yalnızca bu tarayıcıda; Temizle ile silinir).
+        try { localStorage.setItem('perde_deanon_map', JSON.stringify([...map])); } catch (e) {}
+        if (typeof refreshSavedMapBar === 'function') refreshSavedMapBar();
         const p = LEGAL_PROMPTS.find(x => x.id === promptSelect.value) || LEGAL_PROMPTS[0];
         promptDesc.textContent = p.desc;
         promptOutput.value = p.body
@@ -1102,6 +1106,44 @@ document.addEventListener('DOMContentLoaded', () => {
             deanonWarn.style.display = 'none';
         }
         deanonResultStep.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+
+    // ── Geri-çözme haritası kalıcılığı (basit: tarayıcı hafızası) ──
+    // Reload/kapanış sonrası orijinal belge gitse bile, ana ekranda küçük bir
+    // kutu çıkar: AI cevabını yapıştır → kayıtlı haritayla gerçek değerleri al.
+    const SAVED_MAP_KEY = 'perde_deanon_map';
+    const savedMapBar = $('savedMapBar');
+    function refreshSavedMapBar() {
+        if (!savedMapBar) return;
+        let entries = [];
+        try { entries = JSON.parse(localStorage.getItem(SAVED_MAP_KEY) || '[]'); } catch (e) { entries = []; }
+        if (!Array.isArray(entries) || !entries.length) { savedMapBar.style.display = 'none'; savedMapBar._map = null; return; }
+        savedMapBar._map = new Map(entries);
+        const cnt = $('savedMapCount'); if (cnt) cnt.textContent = '(' + savedMapBar._map.size + ' etiket)';
+        savedMapBar.style.display = '';
+    }
+    refreshSavedMapBar();
+    if ($('savedMapDeanon')) $('savedMapDeanon').addEventListener('click', () => {
+        const sm = savedMapBar && savedMapBar._map; if (!sm) return;
+        const ta = $('savedMapResponse');
+        if (!ta.value.trim()) { ta.focus(); return; }
+        const r = deAnonymize(ta.value, sm);
+        $('savedMapResult').textContent = r.text;
+        const stray = [...new Set(r.leftover)];
+        $('savedMapStats').textContent = r.resolved + ' etiket çözüldü'
+            + (stray.length ? ' · ⚠ ' + stray.length + ' etiket çözülemedi (AI bozmuş olabilir)' : '');
+        $('savedMapResultWrap').style.display = '';
+        $('savedMapResultWrap').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+    if ($('savedMapClear')) $('savedMapClear').addEventListener('click', () => {
+        try { localStorage.removeItem(SAVED_MAP_KEY); } catch (e) {}
+        if (savedMapBar) { savedMapBar.style.display = 'none'; savedMapBar._map = null; }
+    });
+    if ($('savedMapCopy')) $('savedMapCopy').addEventListener('click', () => {
+        navigator.clipboard.writeText($('savedMapResult').textContent).then(() => {
+            $('savedMapCopy').textContent = 'Kopyalandı ✓';
+            setTimeout(() => { $('savedMapCopy').textContent = 'Sonucu kopyala'; }, 1200);
+        });
     });
 
     if (deanonCopyBtn) deanonCopyBtn.addEventListener('click', () => {
