@@ -6,7 +6,7 @@ All notable changes to Perde Web are documented here.
 
 ### Added — de-anonymization map persistence
 - The token map is now saved to the browser's `localStorage`, so the AI reply can still be decoded **after a page reload or closing the tab** (previously the map was memory-only and lost on reload). On the home screen a small box appears when a saved map exists: paste the AI response → get the real values back, no need to re-load the document. A **Temizle** button wipes it.
-- **Honesty:** this changes the storage story — the privacy page, README and threat model were updated. The **document text is still never stored**; only the token→value map is, it **stays on the device and is never sent anywhere**, and it is user-clearable. The "nothing is stored at all" claim was softened to "only the token map, on this device, clearable."
+- **Honesty:** this changes the storage story — the privacy page, README and threat model were updated. The **document text is still never stored**; only the token→value map is, it **stays on the device and is never sent anywhere**, and it is user-clearable. The "nothing is stored at all" claim was softened to "only the token map, on this device, clearable." Unit tests 2244 → **2247** (serialize/restore round-trip guards).
 
 ### Changed — engine hardening (data-driven)
 - **Holdout grown 34 → 50 docs** (added property, family, tax, consumer, foreign-company arbitration, social-media KVKK, enforcement, ALL-CAPS petition, and a no-PII negative case). First-run coverage recall on the 50-doc set was 98.1%; gaps were then fixed and locked with regression tests, raising **masking-coverage recall to 99.5%** (F1 99.5%).

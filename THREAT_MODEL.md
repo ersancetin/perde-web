@@ -87,7 +87,7 @@ Findings + masked output ── in memory; de-anon token map saved to
 
 These remain and must be managed by the user:
 
-1. **Detection is rule-based and imperfect.** A novel or unusually-formatted identifier can be missed. Independent holdout testing puts masking-coverage recall around ~98% on diverse synthetic documents — high, but not 100%.
+1. **Detection is rule-based and imperfect.** A novel or unusually-formatted identifier can be missed. Independent holdout testing puts masking-coverage recall around ~99.5% on 50 diverse synthetic documents (independent holdout) — high, but not 100%.
 2. **Narrative re-identification.** Even with all identifiers masked, the facts of a case can identify the parties. Perde cannot mask the story.
 3. **AI provider exposure.** Once the user pastes text into an external AI, that provider's policies apply. Perde's guarantee ends at the copy step.
 4. **AI hallucination.** Prompts reduce but do not eliminate fabricated case law / citations; all output must be verified.

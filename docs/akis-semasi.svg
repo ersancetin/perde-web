@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" font-family="-apple-system, Segoe UI, system-ui, sans-serif">
+  <rect width="1280" height="720" fill="#efeee9"/>
+
+  <!-- Title -->
+  <text x="64" y="74" font-size="34" font-weight="700" fill="#22211e" letter-spacing="-0.5">Perde Web — yerel maskeleme + yapay zeka iş akışı</text>
+  <text x="64" y="108" font-size="18" fill="#5a5850">Kişisel veriler tarayıcıdan çıkmadan AI'a hazırlanır; yanıt yine tarayıcıda çözülür.</text>
+
+  <!-- Device zone -->
+  <rect x="48" y="150" width="800" height="470" rx="18" fill="#ffffff" stroke="#dddcd7" stroke-width="1.5"/>
+  <text x="74" y="186" font-size="15" font-weight="600" fill="#3d7a4a" letter-spacing="0.5">🔒 CİHAZINIZ — TARAYICI (yerel, internet yok)</text>
+
+  <!-- Step boxes inside device -->
+  <!-- 1 Belge -->
+  <rect x="76" y="214" width="220" height="92" rx="12" fill="#f7f6f3" stroke="#dddcd7"/>
+  <text x="96" y="246" font-size="15" font-weight="700" fill="#22211e">1 · Belge</text>
+  <text x="96" y="272" font-size="13" fill="#5a5850">PDF · DOCX · UDF · metin</text>
+  <text x="96" y="292" font-size="13" fill="#96948c">"…Ahmet Yılmaz, X A.Ş.…"</text>
+
+  <!-- 2 Yerel analiz -->
+  <rect x="316" y="214" width="220" height="92" rx="12" fill="#f7f6f3" stroke="#dddcd7"/>
+  <text x="336" y="246" font-size="15" font-weight="700" fill="#22211e">2 · Yerel analiz</text>
+  <text x="336" y="272" font-size="13" fill="#5a5850">100+ veri türü tespiti</text>
+  <text x="336" y="292" font-size="13" fill="#96948c">kişi · kurum · TCKN · IBAN…</text>
+
+  <!-- 3 Tokenlı prompt -->
+  <rect x="556" y="214" width="220" height="92" rx="12" fill="#f7f6f3" stroke="#dddcd7"/>
+  <text x="576" y="246" font-size="15" font-weight="700" fill="#22211e">3 · Tokenlı prompt</text>
+  <text x="576" y="272" font-size="13" fill="#5a5850">geri döndürülebilir token</text>
+  <text x="576" y="292" font-size="13" fill="#4a6fa5">[KISI_1] · [KURUM_2]</text>
+
+  <!-- arrows row 1 -->
+  <line x1="296" y1="260" x2="316" y2="260" stroke="#96948c" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="536" y1="260" x2="556" y2="260" stroke="#96948c" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- 6 Yerel geri çözüm (return) -->
+  <rect x="76" y="470" width="220" height="100" rx="12" fill="#eef3ef" stroke="#bcd3c2"/>
+  <text x="96" y="502" font-size="15" font-weight="700" fill="#22211e">6 · Yerel geri çözüm</text>
+  <text x="96" y="528" font-size="13" fill="#5a5850">token → gerçek değer</text>
+  <text x="96" y="548" font-size="13" fill="#3d7a4a">[KISI_1] → Ahmet Yılmaz</text>
+
+  <!-- 5 Yanıt geri yapıştır -->
+  <rect x="316" y="470" width="220" height="100" rx="12" fill="#f7f6f3" stroke="#dddcd7"/>
+  <text x="336" y="502" font-size="15" font-weight="700" fill="#22211e">5 · Yanıtı yapıştır</text>
+  <text x="336" y="528" font-size="13" fill="#5a5850">AI cevabı tarayıcıya</text>
+  <text x="336" y="548" font-size="13" fill="#96948c">[KISI_1] hâlâ tokenlı</text>
+
+  <!-- map note -->
+  <rect x="556" y="470" width="220" height="100" rx="12" fill="#ffffff" stroke="#dddcd7" stroke-dasharray="4 3"/>
+  <text x="576" y="500" font-size="13" font-weight="600" fill="#5a5850">Etiket haritası</text>
+  <text x="576" y="522" font-size="12" fill="#96948c">yalnızca cihazınızda saklı,</text>
+  <text x="576" y="540" font-size="12" fill="#96948c">AI'a gönderilmez · silinebilir</text>
+
+  <!-- return arrows -->
+  <line x1="536" y1="520" x2="296" y2="520" stroke="#3d7a4a" stroke-width="2" marker-end="url(#g)"/>
+
+  <!-- External AI zone -->
+  <rect x="912" y="150" width="320" height="470" rx="18" fill="#ffffff" stroke="#dddcd7" stroke-width="1.5"/>
+  <text x="938" y="186" font-size="15" font-weight="600" fill="#a63d2f" letter-spacing="0.5">🌐 DIŞARISI — HARİCİ AI</text>
+  <rect x="940" y="300" width="264" height="120" rx="12" fill="#f7f6f3" stroke="#dddcd7"/>
+  <text x="1072" y="344" font-size="16" font-weight="700" fill="#22211e" text-anchor="middle">ChatGPT · Claude</text>
+  <text x="1072" y="370" font-size="16" font-weight="700" fill="#22211e" text-anchor="middle">Gemini …</text>
+  <text x="1072" y="398" font-size="13" fill="#96948c" text-anchor="middle">yalnızca maskeli metin gider</text>
+
+  <!-- boundary dashed -->
+  <line x1="880" y1="150" x2="880" y2="620" stroke="#a63d2f" stroke-width="1.5" stroke-dasharray="6 5" opacity="0.5"/>
+
+  <!-- cross-boundary arrows -->
+  <path d="M 776 260 H 1072 V 300" fill="none" stroke="#96948c" stroke-width="2" marker-end="url(#a)"/>
+  <text x="800" y="248" font-size="12" fill="#5a5850">4 · sen kopyala-yapıştır</text>
+  <path d="M 1072 420 V 520 H 776" fill="none" stroke="#96948c" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- Footer positioning -->
+  <text x="64" y="668" font-size="15" fill="#5a5850">⚠ KVKK uyumluluk garantisi <tspan font-weight="700" fill="#a63d2f">değildir</tspan>; tam anonimleştirme iddia etmez. Avukatın yerini almaz — çıktı kontrol edilmelidir.</text>
+  <text x="64" y="694" font-size="13" fill="#96948c">Açık kaynak · tamamen tarayıcıda · ersancetin.github.io/perde-web</text>
+
+  <defs>
+    <marker id="a" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#96948c"/></marker>
+    <marker id="g" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#3d7a4a"/></marker>
+  </defs>
+</svg>
