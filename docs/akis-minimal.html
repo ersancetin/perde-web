@@ -33,20 +33,20 @@
     color:var(--ink); vertical-align:middle; }
   .num.sg{ border-color:var(--sage); color:var(--sage); }
   .ttl{ display:inline-block; vertical-align:middle; margin-left:10px; font-size:16px; font-weight:700; letter-spacing:-.01em; }
-  .d{ font-size:13px; color:var(--ink2); line-height:1.5; margin-top:11px; }
+  .d{ font-size:14px; color:var(--ink2); line-height:1.5; margin-top:11px; }
   .d.mut{ color:var(--ink3); margin-top:2px; }
   .tok{ font-family:'Spline Sans Mono',monospace; font-size:12px; font-weight:600; color:var(--blue); margin-top:9px; display:inline-block; }
   .tok.sg{ color:var(--sage); }
   .card.resolve{ background:#f1f7f3; border-color:#c4ddcc; }
   .card.note{ background:transparent; border:1px dashed var(--hair); }
-  .note .nt{ font-size:13px; font-weight:700; color:var(--ink2); }
-  .note .nd{ font-size:12.5px; color:var(--ink3); line-height:1.55; margin-top:9px; }
+  .note .nt{ font-size:14px; font-weight:700; color:var(--ink2); }
+  .note .nd{ font-size:13.5px; color:var(--ink3); line-height:1.5; margin-top:9px; }
 
   .aicard{ position:absolute; left:916px; top:300px; width:300px; height:158px; border-radius:16px;
     background:var(--card); border:1px solid var(--line);
     display:flex; flex-direction:column; align-items:center; justify-content:center; gap:7px; }
   .aicard b{ font-size:19px; font-weight:700; }
-  .aicard span{ font-size:12.5px; color:var(--ink3); }
+  .aicard span{ font-size:13.5px; color:var(--ink3); }
 
   /* footer — honest "ne yapar / ne yapmaz" bar */
   .limits{ position:absolute; left:64px; top:614px; display:inline-flex; align-items:stretch;
@@ -60,8 +60,8 @@
   .ic.act{ background:rgba(176,67,47,.11); color:var(--clay); font-style:normal; }
   .ic.yes{ background:rgba(60,122,82,.14); color:var(--sage); }
   .tx{ font-size:13.5px; color:var(--ink); font-weight:700; letter-spacing:-.005em; line-height:1.15; }
-  .tx small{ display:block; font-size:11px; font-weight:500; color:var(--ink3); margin-top:2px; letter-spacing:0; }
-  .url{ position:absolute; left:66px; top:690px; font-size:12px; color:var(--ink3); letter-spacing:.03em; }
+  .tx small{ display:block; font-size:12.5px; font-weight:500; color:var(--ink3); margin-top:3px; letter-spacing:0; }
+  .url{ position:absolute; left:66px; top:691px; font-size:12.5px; color:var(--ink3); letter-spacing:.03em; }
   .brand{ position:absolute; right:64px; top:628px; font-size:17px; font-weight:800; color:var(--ink); text-align:right; }
   .brand small{ display:block; font-size:11px; font-weight:600; color:var(--ink3); margin-top:2px; letter-spacing:.04em; }
 
@@ -75,7 +75,7 @@
 
   <div class="zone local">
     <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#3c7a52" stroke-width="1.5"><rect x="3" y="7" width="10" height="7" rx="1.6" fill="#3c7a52" stroke="none"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></svg>
-    Cihazınız <small>: tarayıcı · internet yok</small>
+    Cihazınız <small>: tarayıcıda · sunucuya gönderim yok</small>
   </div>
   <div class="zone ext">
     <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="#b0432f" stroke-width="1.35"><circle cx="8" cy="8" r="6.6"/><path d="M1.4 8h13.2M8 1.4v13.2"/><ellipse cx="8" cy="8" rx="3" ry="6.6"/></svg>
@@ -103,14 +103,14 @@
   </div>
   <div class="card" style="left:332px; top:436px;">
     <span class="num">5</span><span class="ttl">Yanıtı yapıştır</span>
-    <div class="d">AI cevabı tarayıcıya döner</div><div class="d mut">[KISI_1] hâlâ tokenlı</div>
+    <div class="d">AI yanıtı tarayıcıya döner</div><div class="d mut">[KISI_1] hâlâ tokenlı</div>
   </div>
   <div class="card note" style="left:600px; top:436px;">
     <div class="nt">Etiket haritası</div>
     <div class="nd">yalnızca cihazınızda · AI'a gitmez · silinebilir</div>
   </div>
 
-  <div class="aicard"><b>ChatGPT · Claude</b><b style="margin-top:-4px">Gemini …</b><span>yalnızca maskeli metin gider</span></div>
+  <div class="aicard"><b>ChatGPT · Claude</b><b style="margin-top:-4px">Gemini …</b><span>amaç: yalnızca maskeli metin göndermek</span></div>
   <div class="xlabel">4 · siz kopyalar-yapıştırırsınız</div>
 
   <svg style="position:absolute;left:0;top:0" width="1280" height="720">
