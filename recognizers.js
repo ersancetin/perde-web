@@ -886,7 +886,7 @@ const RECOGNIZERS = [
     {
         entity: 'ES_NIF',
         patterns: [
-            { regex: /\b(\d{1,8}[\-]?[A-Z])\b/g, score: 0.5 },
+            { regex: /\b(\d{5,8}[\-]?[A-Z])\b/g, score: 0.5 },
         ],
         context: ['documento nacional de identidad', 'dni', 'nif', 'identificación',
                   'documento', 'identidad'],
@@ -1075,8 +1075,20 @@ function analyzeText(text, enabledEntities, scoreThreshold = 0.35) {
                 o.entity === 'TR_VERGI_NO' && o.start === f.start && o.end === f.end
             );
             if (hasTurkishTax) { allFindings.splice(i, 1); continue; }
+            const hasPhone = allFindings.some(o =>
+                o.entity === 'PHONE_NUMBER' && o.start <= f.start && o.end >= f.end
+            );
+            if (hasPhone) { allFindings.splice(i, 1); continue; }
+            const hasBankAcct = allFindings.some(o =>
+                o.entity === 'BANK_ACCOUNT_NO' && o.start <= f.start && o.end >= f.end
+            );
+            if (hasBankAcct) { allFindings.splice(i, 1); continue; }
+            const hasIBAN = allFindings.some(o =>
+                o.entity === 'IBAN_CODE' && o.start <= f.start && o.end >= f.end
+            );
+            if (hasIBAN) { allFindings.splice(i, 1); continue; }
             const before = text.substring(Math.max(0, f.start - 40), f.start).toLowerCase();
-            if (/vergi|vkn/.test(before)) { allFindings.splice(i, 1); }
+            if (/vergi|vkn|hesap|iban|eft|havale|banka/.test(before)) { allFindings.splice(i, 1); }
         }
     }
 

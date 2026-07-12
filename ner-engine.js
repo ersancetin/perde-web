@@ -77,6 +77,54 @@ function detectNamesDict(text) {
         'patlayıcı', 'patlayici', 'yanıcı', 'yanici',
         'aydınlatma', 'aydinlatma', 'değerleme', 'degerleme',
         'keşif', 'kesif', 'duruşma', 'durusma', 'celse',
+        // Atlas-mined FP words (336K text stress test)
+        'yönetim', 'kurulu', 'üyeleri', 'üyemiz', 'müşterimiz', 'hocam',
+        'paydaşlar', 'paydaşlarımız', 'meslektaşım', 'meslektaşlarım',
+        'çalışanlarımız', 'kullanıcımız', 'ekip', 'misafirimiz',
+        'hastamız', 'velimiz', 'öğrencimiz', 'danışan', 'paydaşımız',
+        'minimize', 'optimize', 'maximize', 'etmek',
+        'verimliliği', 'verimliliğini', 'sağlığını', 'güvenliğini',
+        'sürekliliğini', 'artırmak', 'sağlamak', 'korumak',
+        'dekanlık', 'kurul', 'yöneticim', 'akademisyen',
+        // Atlas round 2: geographic/concept suffixes & role words
+        'bölgesi', 'denizi', 'paneli', 'panelleri', 'enerjisi', 'devri',
+        'kampı', 'kulesi', 'festivali', 'yayınları', 'haftası',
+        'müdürü', 'başkanı', 'temsilcisi', 'yöneticisi', 'analisti',
+        'kullanıcı', 'araştırmacı', 'ilgililer', 'yönetici',
+        'riskleri', 'durumları', 'hedeflerine', 'hedeflerimize',
+        'riski', 'müşteri', 'ürün', 'bölüm', 'süreci',
+        'şikayet', 'şikayetleri', 'şikayeti', 'sonuçların', 'sonuçlar',
+        'hedeflere', 'hedefler',
+        // Atlas round 4: single-word FPs (months, common words, honorifics)
+        'ocak', 'eylül', 'haziran', 'mayıs', 'mart',
+        'satış', 'kaynak', 'türü', 'turu', 'test',
+        'şef', 'firma', 'tip', 'alan',
+        'bey', 'hanım', 'hanım\'ın',
+        'word', 'ltd',
+        // Atlas round 5: text markers, suffixed common nouns
+        'başlangıcı', 'başlangıç', 'bitişi', 'bitiş', 'sonu', 'sonucu',
+        'kapsamı', 'detayları', 'özeti',
+        // Atlas round 7: table headers, tech terms, common nouns caught via backreference
+        'tarih', 'performans', 'teams', 'node', 'psikoloji', 'edebiyat',
+        'amaç', 'tutar', 'sayısı', 'satis', 'pazarlama',
+        // Atlas round 8: "Sayın X" hitap kelimeleri (title-triggered FPs)
+        'katılımcılar', 'katılımcı', 'katılımcımız', 'çalışanlar', 'çalışan',
+        'çalışanımız', 'çalışanlarımız', 'öğrenci', 'öğrenciler', 'öğrencim',
+        'öğrencilerimiz', 'danışmanım', 'danışman', 'geliştirici',
+        'yatırımcımız', 'yatırımcı', 'yöneticimiz', 'yöneticiler',
+        'velilerimiz', 'vatandaşlarımız', 'müşterilerimiz', 'kullanıcılarımız',
+        'kullanıcılar', 'abonemiz', 'danışanımız', 'müdürüm', 'dekanım',
+        'paydaş', 'koordinatör', 'muhatap', 'mükellef', 'yetkililer', 'üyeler',
+        'analist', 'profesör', 'direktör', 'eğitmen', 'rektörlük', 'dekan',
+        // Atlas round 8: "MS X" ve "EDR X" FP tetikleyicileri
+        'dynamics', 'defender', 'sentinel', 'alpha', 'beta', 'pro',
+        // Atlas round 8: two-word FP trailing words (FirstName + CommonWord)
+        'dönemi', 'dönem', 'hikayeleri', 'kenarı', 'suyu',
+        'isyanı', 'analizi', 'kitap', 'kargo', 'anketi',
+        'entegrasyonu', 'platformu', 'haftası', 'haftasi',
+        'yardımcısı', 'fişi', 'şefi', 'yazılımı', 'sistemi',
+        'kaydı', 'sonuçları', 'sonuç', 'sonuc', 'soru', 'adım',
+        'departman', 'departmanı', 'puan',
     ]);
 
     const ORG_INDICATOR_WORDS = new Set([
@@ -110,7 +158,7 @@ function detectNamesDict(text) {
 
     // 1) Title-triggered name detection (high confidence)
     const titlePattern = new RegExp(
-        '(?:' + TITLE_PREFIXES.map(t => t.replace('.', '\\.')).join('|') +
+        '(?<![a-zA-ZçğıöşüÇĞİÖŞÜ])(?:' + TITLE_PREFIXES.map(t => t.replace('.', '\\.')).join('|') +
         ')[ \\t]*[:\\-]?[ \\t]*',
         'gi'
     );
@@ -363,6 +411,7 @@ function detectNamesDict(text) {
     let possM;
     while ((possM = possessiveRe.exec(text)) !== null) {
         const name = possM[1];
+        if (NOT_NAMES.has(trLower(name))) continue;
         if (!nameSetHas(TR_FIRST_NAMES, name) && !nameSetHas(TR_LAST_NAMES, name)) continue;
         const nameStart = possM.index + possM[0].indexOf(name);
         const nameEnd = nameStart + name.length;
@@ -394,6 +443,7 @@ function detectNamesDict(text) {
         while ((sn = singleNameRe.exec(text)) !== null) {
             const word = sn[1];
             const wordLower = trLower(word);
+            if (NOT_NAMES.has(wordLower)) continue;
             if (!detectedFirstNames.has(wordLower) && !detectedLastNames.has(wordLower)) continue;
             const snStart = sn.index + sn[0].indexOf(word);
             const snEnd = snStart + word.length;
@@ -975,14 +1025,14 @@ function detectLegalEntities(origText) {
         { regex: /(?:C[İI]MER|cimer)\s*(?:başvuru\s*)?(?:no|numaras[ıIi]?)\s*[:\-]?\s*([A-Z0-9][\w\-]{5,25})/gi, score: 0.85, entity: 'GOV_DOCUMENT_ID' },
         { regex: /(?:e[\-\s]*[Dd]evlet|edevlet)\s*(?:kullan[ıIi]c[ıIi]\s*)?(?:[İiI]şlem\s*)?(?:no|numaras[ıIi]?)\s*[:\-]?\s*([A-Z0-9][\w\-]{5,25})/gi, score: 0.85, entity: 'GOV_DOCUMENT_ID' },
         { regex: /(?:tebligat)\s*(?:barkod\s*)?(?:no|numaras[ıIi]?)\s*[:\-]?\s*(\d{10,16})/gi, score: 0.85, entity: 'GOV_DOCUMENT_ID' },
-        { regex: /(?:[İi]tiraz|şikayet)\s*(?:başvuru\s*)?(?:no|numaras[ıIi]?)\s*[:\-]?\s*([A-Z0-9][\w\-]{5,25})/gi, score: 0.85, entity: 'GOV_DOCUMENT_ID' },
-        { regex: /(?:dilekçe|onay|tahakkuk|tebliğ|beyanname|karar\s*[İi]lam|veraset\s*[İi]lam|[İi]ntikal)\s*(?:no|numaras[ıIi]?)\s*[:\-]?\s*([A-Z0-9][\w\-]{5,25})/gi, score: 0.85, entity: 'GOV_DOCUMENT_ID' },
+        { regex: /(?:[İi]tiraz|şikayet)\s*(?:başvuru\s*)?(?:numaras[ıIi]?|(?:no|kodu)\b)\s*[:\-]?\s*((?=[A-Z0-9\w\-]*\d)[A-Z0-9][\w\-]{5,25})/gi, score: 0.85, entity: 'GOV_DOCUMENT_ID' },
+        { regex: /(?:dilekçe|onay|tahakkuk|tebliğ|beyanname|karar\s*[İi]lam|veraset\s*[İi]lam|[İi]ntikal)\s*(?:numaras[ıIi]?|(?:no|kodu)\b)\s*[:\-]?\s*((?=[A-Z0-9\w\-]*\d)[A-Z0-9][\w\-]{5,25})/gi, score: 0.85, entity: 'GOV_DOCUMENT_ID' },
         { regex: /(?:encümen)\s*(?:karar\s*)?(?:no|numaras[ıIi]?)\s*[:\-]?\s*(\d{4}\s*\/\s*\d{1,7})/gi, score: 0.92, entity: 'GOV_DOCUMENT_ID' },
-        { regex: /(?:[İi]şlem)\s*(?:no|numaras[ıIi]?)\s*[:\-]?\s*([A-Z0-9][\w\-]{5,25})/gi, score: 0.85, entity: 'GOV_DOCUMENT_ID' },
-        { regex: /(?:randevu)\s*(?:no|numaras[ıIi]?)\s*[:\-]?\s*([A-Z0-9][\w\-]{5,25})/gi, score: 0.85, entity: 'GOV_DOCUMENT_ID' },
-        { regex: /(?:sözleşme\w*)\s*(?:no|numaras[ıIi]?)\s*[:\-]?\s*([A-Z0-9][\w\-]{5,25})/gi, score: 0.85, entity: 'GOV_DOCUMENT_ID' },
+        { regex: /(?:[İi]şlem)\s*(?:numaras[ıIi]?|(?:no)\b)\s*[:\-]?\s*((?=[A-Z0-9\w\-]*\d)[A-Z0-9][\w\-]{5,25})/gi, score: 0.85, entity: 'GOV_DOCUMENT_ID' },
+        { regex: /(?:randevu)\s*(?:numaras[ıIi]?|(?:no)\b)\s*[:\-]?\s*((?=[A-Z0-9\w\-]*\d)[A-Z0-9][\w\-]{5,25})/gi, score: 0.85, entity: 'GOV_DOCUMENT_ID' },
+        { regex: /(?:sözleşme\w*)\s*(?:numaras[ıIi]?|(?:no)\b)\s*[:\-]?\s*((?=[A-Z0-9\w\-]*\d)[A-Z0-9][\w\-]{5,25})/gi, score: 0.85, entity: 'GOV_DOCUMENT_ID' },
         // Genel ticari referans alanları (dar allowlist — FP'den kaçınmak için)
-        { regex: /(?:s[İiı]par[İiı]ş|üye|abone|talep|tekl[İiı]f|[İiı]rsal[İiı]ye|makbuz|sevk[İiı]yat|teslimat|kargo|takip\s*kod)\s*(?:no|numaras[ıIi]?|kodu)\s*[:\-]?\s*([A-Z0-9][\w\-]{4,25})/gi, score: 0.8, entity: 'GOV_DOCUMENT_ID' },
+        { regex: /(?:s[İiı]par[İiı]ş|üye|abone|talep|tekl[İiı]f|[İiı]rsal[İiı]ye|makbuz|sevk[İiı]yat|teslimat|kargo|takip\s*kod)\s*(?:numaras[ıIi]?|(?:no|kodu)\b)\s*[:\-]?\s*((?=[A-Z0-9\w\-]*\d)[A-Z0-9][\w\-]{4,25})/gi, score: 0.8, entity: 'GOV_DOCUMENT_ID' },
         { regex: /(?:dekont)\s*(?:no|numaras[ıIi]?)\s*[:\-]?\s*([A-Z0-9][\w\-]{5,25})/gi, score: 0.85, entity: 'FINANCIAL_ID' },
         { regex: /\b((?:ABB|IBB|BLD|TPU|RND|ISL|TWB|SVS|DKT|KON|YRS|ISK|BEB|IMR|VTH|TIS|THH|SRV|ARZ|TLP|CMK|VIV|VRT|BYN|ICR)\-\d{4}\-\d{4,10})\b/g, score: 0.8, entity: 'GOV_DOCUMENT_ID' },
 
@@ -1072,16 +1122,16 @@ function detectLegalEntities(origText) {
         { regex: /\b(\d{4}\s*\/\s*\d{1,7})\s*(?:esas|karar|say[ıIi]l[ıIi]|e\.|k\.)/gi, score: 0.85, entity: 'CASE_NUMBER' },
         { regex: /\b[EeKk]\.\s*(\d{4}\s*\/\s*\d{1,7})/g, score: 0.85, entity: 'CASE_NUMBER' },
         { regex: /\b(\d{4}\/[EeKk]\.\d{1,7})\b/g, score: 0.85, entity: 'CASE_NUMBER' },
-        { regex: /(?:dosya|dava)\s*(?:no|numaras[ıIi]?)\s*[:\-]?\s*([A-Z0-9\-\/]{5,25})/gi, score: 0.8, entity: 'CASE_NUMBER', needsDigit: true },
-        { regex: /(?:başvuru)\s*(?:dosya\s*)?(?:no|numaras[ıIi]?)\s*[:\-]?\s*([A-Z0-9\-\/]{5,25})/gi, score: 0.8, entity: 'CASE_NUMBER', needsDigit: true },
-        { regex: /(?:referans)\s*(?:(?:s[İiI]c[İiI]l|kay[ıIi]t)\s*)?(?:no|numaras[ıIi]?|kodu|ref)\s*[:\-]?\s*([A-Z0-9][\w\-]{2,24})/gi, score: 0.8, entity: 'CASE_NUMBER' },
+        { regex: /(?:dosya|dava)\s*(?:numaras[ıIi]?|(?:no)\b)\s*[:\-]?\s*([A-Z0-9\-\/]{5,25})/gi, score: 0.8, entity: 'CASE_NUMBER', needsDigit: true },
+        { regex: /(?:başvuru)\s*(?:dosya\s*)?(?:numaras[ıIi]?|(?:no)\b)\s*[:\-]?\s*([A-Z0-9\-\/]{5,25})/gi, score: 0.8, entity: 'CASE_NUMBER', needsDigit: true },
+        { regex: /(?:referans)\s*(?:(?:s[İiI]c[İiI]l|kay[ıIi]t)\s*)?(?:numaras[ıIi]?|(?:no|kodu|ref)\b)\s*[:\-]?\s*((?=[A-Z0-9\w\-]*\d)[A-Z0-9][\w\-]{2,24})/gi, score: 0.8, entity: 'CASE_NUMBER' },
         { regex: /\b(\d{4}\.[EHİKehiİk]\.?\d{1,7})\b/g, score: 0.9, entity: 'CASE_NUMBER' },
         { regex: /\b((?:HD|HSR|DSY|THK|RCU)\-\d{4}\-\d{4,10})\b/g, score: 0.8, entity: 'CASE_NUMBER' },
         { regex: /\b((?:TXN|TRX|REF|OPR)\-\d{4}\-\d{4,15})\b/g, score: 0.8, entity: 'CASE_NUMBER' },
-        { regex: /(?:[İi]lan)\s*(?:no|numaras[ıIi]?)\s*[:\-]?\s*([A-Z0-9][\w\-]{3,25})/gi, score: 0.8, entity: 'CASE_NUMBER' },
+        { regex: /(?:[İi]lan)\s*(?:numaras[ıIi]?|(?:no)\b)\s*[:\-]?\s*((?=[A-Z0-9\w\-]*\d)[A-Z0-9][\w\-]{3,25})/gi, score: 0.8, entity: 'CASE_NUMBER' },
         { regex: /\b((?:ILN)\-\d{4}\-\d{4,10})\b/g, score: 0.8, entity: 'CASE_NUMBER' },
         { regex: /\b(K-\d{4}\/\d{3,10})\b/g, score: 0.9, entity: 'CASE_NUMBER' },
-        { regex: /\b((?:19|20)\d{2}\/\d{1,6})\b/g, score: 0.45, entity: 'CASE_NUMBER' },
+        { regex: /\b((?:19|20)\d{2}\/(?!(?:19|20)\d{2}\b)\d{1,6})\b(?!\s*=)/g, score: 0.45, entity: 'CASE_NUMBER' },
         // Kurul karar sayısı: YYYY/ABC-NNNNN veya ABC/YYYY-NNNNN
         { regex: /\b(\d{4}\/[A-ZÇĞİÖŞÜ]{2,6}-\d{2,7})\b/g, score: 0.8, entity: 'CASE_NUMBER' },
         { regex: /\b([A-ZÇĞİÖŞÜ]{2,6}\/\d{4}-\d{2,7})\b/g, score: 0.8, entity: 'CASE_NUMBER' },
@@ -1103,9 +1153,9 @@ function detectLegalEntities(origText) {
         // PROPERTY_ID — tapu, ada, parsel, pafta, bağımsız bölüm
         { regex: /(?:tapu\s*(?:kay[ıIi]t|s[İiI]c[İiI]l|tesc[İiI]l))\s*(?:no|numaras[ıIi]?)\s*[:\-]?\s*([A-Z0-9][\w\-]{3,25})/gi, score: 0.85, entity: 'PROPERTY_ID' },
         { regex: /(?:ada)\s*[\/\-]\s*(?:parsel)\s*[:\-]?\s*(\d{2,6}\s*\/\s*\d{1,6})/gi, score: 0.7, entity: 'PROPERTY_ID' },
-        { regex: /(?:ada)\s*[:\-]?\s*(\d{2,6})/gi, score: 0.4, entity: 'PROPERTY_ID' },
-        { regex: /\b(\d{2,6})\s+ada\b/gi, score: 0.5, entity: 'PROPERTY_ID' },
-        { regex: /(?:parsel)\s*[:\-]?\s*(\d{1,6})/gi, score: 0.4, entity: 'PROPERTY_ID' },
+        { regex: /(?:ada)\s*[:\-]\s*(\d{2,6})/gi, score: 0.4, entity: 'PROPERTY_ID' },
+        { regex: /\b(\d{2,6})\s+ada\b(?=\s*(?:\d|[,;:\-\/]|parsel|pafta|$))/gi, score: 0.5, entity: 'PROPERTY_ID' },
+        { regex: /(?:parsel)\s*[:\-]\s*(\d{1,6})/gi, score: 0.4, entity: 'PROPERTY_ID' },
         { regex: /\b(\d{1,6})\s+parsel/gi, score: 0.5, entity: 'PROPERTY_ID' },
         { regex: /(?:pafta)\s*(?:no|numaras[ıIi]?)?\s*[:\-]?\s*([A-Z0-9][\w\-]{1,15})/gi, score: 0.5, entity: 'PROPERTY_ID' },
         { regex: /(?:ba[ğg][ıIi]ms[ıIi]z\s*bölüm)\s*(?:no|numaras[ıIi]?)?\s*[:\-]?\s*(\d{1,5})/gi, score: 0.5, entity: 'PROPERTY_ID' },
@@ -1135,9 +1185,9 @@ function detectLegalEntities(origText) {
 
     // Policy numbers
     const policyPatterns = [
-        { regex: /(?:poliçe|police)\s*(?:no|numaras[ıIi]?)?\s*(?:\([^)]*\)\s*)?[:\-]?\s*([A-Z0-9\-]{5,25})/gi, score: 0.9, entity: 'POLICY_NUMBER' },
-        { regex: /(?:traf[İiI]k|kasko|sa[ğg]l[ıIi]k|hayat|ferd[İiI]\s*kaza|DASK|deprem|yang[ıIi]n|konut|[İiI]şyer[İiI]|nakl[İiI]yat|mühend[İiI]sl[İiI]k|sorumluluk|emekl[İiI]l[İiI]k)\s*(?:pol[İiI]çe|s[İiI]gorta)\s*(?:no|numaras[ıIi]?)?\s*[:\-]?\s*([A-Z0-9\-]{5,25})/gi, score: 0.9, entity: 'POLICY_NUMBER' },
-        { regex: /(?:s[İiI]gorta)\s*(?:pol[İiI]çe|sert[İiI]f[İiI]ka|certificate)\s*(?:no|numaras[ıIi]?)?\s*[:\-]?\s*([A-Z0-9\-]{5,25})/gi, score: 0.85, entity: 'POLICY_NUMBER' },
+        { regex: /(?:poliçe|police)\s*(?:no|numaras[ıIi]?)?\s*(?:\([^)]*\)\s*)?[:\-]?\s*((?=[A-Z0-9\-]*\d)[A-Z0-9\-]{5,25})/gi, score: 0.9, entity: 'POLICY_NUMBER' },
+        { regex: /(?:traf[İiI]k|kasko|sa[ğg]l[ıIi]k|hayat|ferd[İiI]\s*kaza|DASK|deprem|yang[ıIi]n|konut|[İiI]şyer[İiI]|nakl[İiI]yat|mühend[İiI]sl[İiI]k|sorumluluk|emekl[İiI]l[İiI]k)\s*(?:pol[İiI]çe|s[İiI]gorta)\s*(?:no|numaras[ıIi]?)?\s*[:\-]?\s*((?=[A-Z0-9\-]*\d)[A-Z0-9\-]{5,25})/gi, score: 0.9, entity: 'POLICY_NUMBER' },
+        { regex: /(?:s[İiI]gorta)\s*(?:pol[İiI]çe|sert[İiI]f[İiI]ka|certificate)\s*(?:no|numaras[ıIi]?)?\s*[:\-]?\s*((?=[A-Z0-9\-]*\d)[A-Z0-9\-]{5,25})/gi, score: 0.85, entity: 'POLICY_NUMBER' },
         { regex: /\b([A-Z]{2,5}\-\d{4}\-\d{4,10})\s*(?:numaral[ıIi]|nolu|no['']?lu)\s*(?:pol[İiI]çe|s[İiI]gorta)/gi, score: 0.85, entity: 'POLICY_NUMBER' },
     ];
 
@@ -1561,7 +1611,7 @@ function detectPersonalAttributes(origText, enabledEntities) {
     // NATIONALITY — "uyruğu: T.C.", "Vatandaşlık\nTürkiye Cumhuriyeti"
     // \b: "uyruk" kelimesinin "uyruklu" içine kaçıp "lu Hans..."'ı yakalamasını engeller
     runPatterns([
-        { regex: /(?:uyruk|uyru[ğg]u|tab[İiI][İiI]yet[İiI]?|tâb[İiI][İiI]yet[İiI]?|vatandaşl[ıIi][ğg][ıIi]?|vatandaşl[ıIi]k)(?![a-zçğıöşüâîû])\s*[:\-]?\s*[\n\r]?\s*([A-ZÇĞİÖŞÜa-zçğıöşü. ]{2,30}?)(?=\s*[\n,;]|$)/gi, score: 0.9, entity: 'NATIONALITY', minLen: 2 },
+        { regex: /(?<![a-zA-ZçğıöşüÇĞİÖŞÜ])(?:uyruk|uyru[ğg]u|tab[İiI][İiI]yet[İiI]?|tâb[İiI][İiI]yet[İiI]?|vatandaşl[ıIi][ğg][ıIi]?|vatandaşl[ıIi]k)(?![a-zçğıöşüâîû])\s*[:\-]?\s*[\n\r]?\s*([A-ZÇĞİÖŞÜa-zçğıöşü. ]{2,30}?)(?=\s*[\n,;]|$)/gi, score: 0.9, entity: 'NATIONALITY', minLen: 2 },
         // "Alman uyruklu", "Fransız vatandaşı" — uyruk sıfatı anahtar kelimeden ÖNCE
         { regex: /([A-ZÇĞİÖŞÜ][a-zçğıöşü]+(?:l[ıiuü])?)\s+(?:uyruklu|uyru[ğg]una|vatandaş[ıi]|tab[İiI][İiI]yet[İiI]nde|tebaas[ıi])\b/g, score: 0.85, entity: 'NATIONALITY', minLen: 2 },
     ]);
@@ -1588,7 +1638,7 @@ function detectPersonalAttributes(origText, enabledEntities) {
 
     // OCCUPATION — "mesleği: avukat"
     runPatterns([
-        { regex: /(?:mesle[ğg][İiI]?|meslek|görev[İiI]?)\s*[:\-]\s*([A-ZÇĞİÖŞÜa-zçğıöşü\s]{2,40}?)(?=\s*[,.\n;]|$)/gi, score: 0.85, entity: 'OCCUPATION', minLen: 2 },
+        { regex: /(?:mesle[ğg][İiI]?|meslek|görev[İiI]?)\s*[:\-]\s*([A-ZÇĞİÖŞÜa-zçğıöşü\s]{2,25}?)(?=\s*[,.\n;]|$)/gi, score: 0.85, entity: 'OCCUPATION', minLen: 2 },
     ]);
 
     // MILITARY_ID — "askerlik no: 2024-118742"
@@ -1662,7 +1712,7 @@ function detectPersonalAttributes(origText, enabledEntities) {
 
     // RELIGION — "dini: İslam", "İnancı: Hristiyanlık"
     runPatterns([
-        { regex: /(?:d[İiI]n[İiI]?|[İiI]nanc[ıIi]|mezheb[İiI]?)\s*[:\-]\s*([A-ZÇĞİÖŞÜa-zçğıöşü\s]{2,30}?)(?=\s*[,.\n;]|$)/gi, score: 0.95, entity: 'RELIGION', minLen: 2 },
+        { regex: /(?:^|[\s,;.])(?:d[İiI]n[İiI]?|[İiI]nanc[ıIi]|mezheb[İiI]?)\s*[:\-]\s*([A-ZÇĞİÖŞÜa-zçğıöşü\s]{2,30}?)(?=\s*[,.\n;]|$)/gi, score: 0.95, entity: 'RELIGION', minLen: 2 },
     ]);
 
     // ETHNICITY — "etnik kökeni: Kürt", "Irkı: Kafkas"
@@ -1710,7 +1760,7 @@ function detectPersonalAttributes(origText, enabledEntities) {
 
     // MILITARY_STATUS — "askerlik durumu: yapıldı", "Askerlik: Tecilli", "Askerlik\nYapıldı"
     runPatterns([
-        { regex: /(?:askerl[İiI]k\s*(?:durum[uü]?|h[İiI]zmet[İiI]?)?)\s*[:\-]?\s*[\n\r]?\s*([A-ZÇĞİÖŞÜa-zçğıöşü\s]{2,40}?)(?=\s*[,.\n;]|$)/gi, score: 0.85, entity: 'MILITARY_STATUS', minLen: 2 },
+        { regex: /(?:askerl[İiI]k\s*(?:durum[uü]?|h[İiI]zmet[İiI]?)?)\s*(?:[:\-]|[\n\r])\s*([A-ZÇĞİÖŞÜa-zçğıöşü\s]{2,40}?)(?=\s*[,.\n;]|$)/gi, score: 0.85, entity: 'MILITARY_STATUS', minLen: 2 },
     ]);
 
     // RESIDENCE_PERMIT — "ikamet izni no: IKA-2024-551882"
@@ -1770,8 +1820,8 @@ function detectPersonalAttributes(origText, enabledEntities) {
             let m;
             while ((m = regex.exec(text)) !== null) {
                 const val = m[1].trim();
-                // Handle benzeri olmalı: en az bir rakam/nokta/alt-çizgi/tire içersin (düz kelime FP'sini engelle)
-                if (val.length < 3 || !/[0-9._-]/.test(val)) continue;
+                const cleanVal = val.replace(/\.$/, '');
+                if (cleanVal.length < 3 || !/[0-9._-]/.test(cleanVal)) continue;
                 const valStart = m.index + m[0].indexOf(m[1]);
                 addFinding('USERNAME', val, valStart, 0.85);
             }
