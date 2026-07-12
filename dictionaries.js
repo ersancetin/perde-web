@@ -121,6 +121,12 @@ const TR_FIRST_NAMES = new Set([
     'jessica', 'sarah', 'karen', 'nancy', 'lisa', 'betty', 'margaret', 'sandra',
     'george', 'alexander', 'benjamin', 'henry', 'andrew', 'peter', 'paul',
     'mohammed', 'ahmed', 'omar', 'hassan', 'hussein', 'ibrahim', 'mahmoud',
+    // Atlas-mined: new Turkish first names (Türkçe Atlas 336K dataset)
+    'seda', 'emin', 'lara', 'berkan', 'hayriye', 'gülsüm', 'nilay', 'begüm',
+    'ecem', 'vildan', 'sude', 'belma', 'şule', 'berrin', 'arif', 'cemil',
+    'nurettin', 'abdülmecid', 'kadri', 'reşit',
+    // Atlas-mined: ASCII variants (OCR/informal text)
+    'ayse', 'asli', 'nazli', 'ozlem', 'cicek', 'guler', 'gul',
 ]);
 
 // ============================================================
@@ -195,6 +201,28 @@ const TR_LAST_NAMES = new Set([
     'türkmen', 'uçkan', 'uzunalioğlu', 'varlık', 'yağmur', 'yalın',
     'yamaç', 'yanbolu', 'yapıcı', 'yaşaroğlu', 'yazgan', 'yılmazer',
     'yurdakul', 'yurduseven', 'zengin', 'zeyrek',
+    // Atlas-mined: new Turkish last names (Türkçe Atlas 336K dataset)
+    'şafak', 'gök', 'pamuk', 'boz', 'belözoğlu', 'aktürkoğlu',
+    'erkin', 'akar', 'korkut', 'karatay', 'paşa', 'bonomo', 'saracoğlu',
+    'soyer', 'manço', 'ergül', 'gültekin', 'dizdar', 'dağdeviren', 'gencebay',
+    'ertekin', 'sancar', 'karatepe', 'vefa', 'özden', 'menderes', 'topuz',
+    'ferah', 'vuran', 'sarp', 'atay', 'yorulmaz', 'sabancı', 'kayahan',
+    'taşpınar', 'sunal', 'ustaoğlu', 'kırdar', 'pekcan', 'akalın',
+    'erdemir', 'karabekir', 'çalhanoğlu', 'müren', 'gürses', 'günok',
+    'özçivit', 'şoray', 'demirkubuz', 'cindoruk', 'büyüküstün', 'bodur',
+    'nalbant', 'karahan', 'tilbe', 'karabacak', 'girgin',
+    // Atlas round 9: high-frequency missing surnames from 336K stress test
+    'vural', 'topuzlu', 'beyaz', 'ipek', 'terim', 'saraçoğlu', 'gür',
+    'tok', 'seki', 'sevin', 'han', 'baş', 'sen', 'ülker',
+    'göğebakan', 'sezgen', 'özbatur', 'karasu', 'karaoğlan',
+    // Atlas-mined: ASCII variants of existing surnames (OCR/informal text)
+    'yilmaz', 'ozkan', 'yildiz', 'erdogan', 'yildirim', 'sahin', 'kilic',
+    'aydin', 'taskin', 'cetin', 'topcu', 'gunes', 'sari', 'ozturk',
+    'simsek', 'ozdemir', 'celik', 'eroglu', 'dogan', 'demirtas', 'firat',
+    'ucar', 'ates', 'savas', 'tatli', 'turkmen', 'pinar', 'dincer', 'genc',
+    'dagli', 'ozen', 'koc', 'tunc', 'ergun', 'kiran', 'aktas', 'bahadir',
+    'umit', 'erturk', 'altin', 'karsli', 'karakas', 'kucuk', 'ertugrul',
+    'riza', 'guven', 'dag', 'tas',
     // International
     'smith', 'johnson', 'williams', 'brown', 'jones', 'garcia', 'miller',
     'davis', 'rodriguez', 'martinez', 'hernandez', 'lopez', 'gonzalez', 'wilson',
