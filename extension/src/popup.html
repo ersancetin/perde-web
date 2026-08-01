@@ -80,6 +80,7 @@ button.b:hover { background: var(--accent-light); }
 button.b.wide { width: 100%; }
 button.b.danger { color: var(--red); border-color: #e8d5d1; }
 button.b.danger:hover { background: #fbeae7; }
+button.b.tiny { font-size: 11.5px; padding: 4px 9px; margin-top: 6px; color: var(--text-2); }
 
 kbd {
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10.5px;
@@ -206,7 +207,8 @@ footer a { color: var(--text-2); }
 <section>
     <div class="lbl">Dene — ne maskelenir?</div>
     <textarea id="probe" rows="3" spellcheck="false"
-        placeholder="Buraya bir metin yaz veya yapıştır — mevcut ayarlarla ne yakalanacağını gösterir. Örn: Düzce Cumayeri Mahallesi, TC 12345678901"></textarea>
+        placeholder="Metni yaz veya yapıştır — mevcut ayarlarla neyin maskeleneceğini gösterir."></textarea>
+    <button class="b tiny" id="probeSample">Örnek metin doldur</button>
     <div id="probeOut" class="probe-out"></div>
 </section>
 

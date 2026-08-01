@@ -26,7 +26,9 @@ Perde — yapıştırma kontrolü
 [Ayarlar]        [Olduğu gibi yapıştır]  [Maskeli yapıştır]
 ```
 
-Satırların işaretini kaldırarak tek tek açık bırakabilirsin. Panel istemiyorsan
+Her satırda tür etiketi ve güven çubuğu var; işareti kaldırdığın satır üstü
+çizili görünür ve kırmızı **açık gidecek** uyarısı alır. Üstteki
+*tümünü maskele / tümünü açık bırak* ile hepsini birden çevirebilirsin. Panel istemiyorsan
 **Sessiz maskele** moduna geçebilirsin — o zaman sormadan maskeler, köşede
 "geri al" bağlantısıyla kısa bir bildirim çıkar.
 
@@ -40,7 +42,7 @@ editörlerin durumunu bozar. Yazarken yalnızca *etiketler*, maskeleme tek tıkl
 veya <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>M</kbd> ile olur.
 
 **3. "Dene" alanı — neden maskelemedi?** Eklenti ikonuna tıkla, alttaki
-**Dene** kutusuna metni yaz veya yapıştır: mevcut ayarlarla tam olarak neyin
+**Dene** kutusuna metni yaz veya yapıştır (ya da *Örnek metin doldur*'a bas): mevcut ayarlarla tam olarak neyin
 yakalandığını (tür + güven yüzdesi), maskeli halinin nasıl görüneceğini ve daha
 geniş bir profilin ne ekleyeceğini gösterir. "Tespit mi yok, profil mi kapatıyor"
 sorusunun cevabı burada.
@@ -181,7 +183,7 @@ content script hepsi onu yükler — ikinci bir kopya yok.
 ## Test
 
 ```bash
-npm test          # kök (2267) + eklenti (207)
+npm test          # kök (2299) + eklenti (207)
 npm run test:ext  # yalnızca eklenti
 ```
 
@@ -194,7 +196,7 @@ npm run build:ext
 node extension/tools/e2e.js            # başsız ortamda: xvfb-run -a node ...
 ```
 
-61 kontrol: yapıştırmanın kesilmesi, maskeli metnin textarea ve contenteditable'a
+65 kontrol: yapıştırmanın kesilmesi, maskeli metnin textarea ve contenteditable'a
 yazılması, şifre alanına dokunulmaması, üç maskeleme stili, site/ana şalter,
 yazarken rozet, token round-trip ve popup'ın "Dene" alanı. Eklentinin en kırılgan
 yeri burası ve ilk çalıştırmada iki gerçek hata yakaladı (bkz. CHANGELOG) — saf

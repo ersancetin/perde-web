@@ -7291,6 +7291,82 @@ function aiwfFindAt(text, val, from) { const i = text.indexOf(val, from || 0); r
 }
 
 // ============================================================
+// KÜÇÜK HARFLİ YER ADLARI
+// ============================================================
+// Kullanıcı raporu: "ersan çetin, cumayeri mahallesi, düzce" yazıldığında
+// yalnızca isim maskeleniyordu. İsim sözlüğü büyük/küçük harfe toleranslıydı
+// ama konum tespiti baş harfin büyük olmasını şart koşuyordu — resmi belge için
+// doğru, sohbet metni için değil.
+
+console.log('\n--- Küçük Harfli Yer Adları ---');
+
+function checkLower(cond, label) {
+    total++;
+    if (cond) { pass++; } else { fail++; console.log('  FAIL (lower): ' + label); }
+}
+
+function locsOf(text) {
+    return analyzeText(text, ALL, 0.4)
+        .filter(f => f.entity === 'LOCATION' || f.entity === 'ADDRESS');
+}
+
+{
+    // Küçük harfli il / ilçe / mahalle yakalanmalı
+    for (const t of ['düzce', 'istanbul', 'ankara', 'izmir', 'kadıköy', 'çankaya']) {
+        checkLower(locsOf(t).length > 0, 'küçük harfli yer adı bulunur: ' + t);
+    }
+    // Son ekli küçük harfli ad (gazetteer'da olmayanlar da: "cumayeri")
+    for (const t of ['cumayeri mahallesi', 'atatürk caddesi', 'gül sokak', 'çamlık köyü']) {
+        checkLower(locsOf(t).length > 0, 'küçük harfli son ekli ad bulunur: ' + t);
+    }
+    // Kullanıcının bildirdiği tam girdi
+    const reported = 'ersan çetin, cumayeri mahallesi, düzce';
+    const rf = analyzeText(reported, ALL, 0.4);
+    checkLower(rf.some(f => f.entity === 'PERSON_NAME'), 'bildirilen girdide isim bulunur');
+    checkLower(rf.some(f => f.entity === 'ADDRESS' || f.entity === 'LOCATION'),
+        'bildirilen girdide yer adı bulunur');
+    checkLower(rf.some(f => f.entity === 'ADDRESS' && /cumayeri/.test(f.value) && /düzce/.test(f.value)),
+        'bildirilen girdide mahalle+il tek ADDRESS bloğunda birleşir');
+
+    // Büyük harfli hali bozulmamış olmalı
+    for (const t of ['Düzce', 'İstanbul Kadıköy', 'Cumayeri Mahallesi']) {
+        checkLower(locsOf(t).length > 0, 'büyük harfli hali korunur: ' + t);
+    }
+
+    // ── Yanlış pozitif koruması ──
+    // Günlük Türkçede başka anlamı olan il/ilçe adları, yer ipucu YOKSA
+    // konum sayılmamalı. Yoksa "baş ağrısı" veya "bir bardak çay" maskelenirdi.
+    for (const t of ['sağ kolumda şiddetli ağrı var', 'bir bardak çay içtik',
+                     'ordu birliğine sevk edildi', 'batman filmini izledim',
+                     'uşak gibi çalıştırdılar', 'aydın bir insandı', 'tokat attı',
+                     'eski konak yıkıldı', 'davanın esası hakkında']) {
+        checkLower(locsOf(t).length === 0, 'ipucu yokken konum sanılmıyor: ' + t +
+            ' → ' + locsOf(t).map(f => f.value).join(','));
+    }
+    // Ama yer ipucu varsa yakalanmalı
+    for (const t of ['ordu ili merkez', 'ağrı ilçesinde oturuyor',
+                     'van adresinde ikamet ediyor', 'tokat ili doğumlu']) {
+        checkLower(locsOf(t).length > 0, 'ipucu varken konum bulunur: ' + t);
+    }
+
+    // Küçük harfli adres kalıbı soldaki sıradan kelimeleri YUTMAMALI
+    // (bu tam olarak ilk denemede kırdığım şey; ayrı bir expectNot testi de var)
+    const swallow = 'Maliki bulunduğum Bağlarbaşı Mah. Çınar Sok. No:9';
+    const sf = analyzeText(swallow, ALL, 0.4)
+        .filter(f => f.entity === 'ADDRESS' || f.entity === 'LOCATION');
+    checkLower(sf.length > 0, 'gerçek adres yine bulunur');
+    checkLower(!sf.some(f => /Maliki|bulunduğum/.test(f.value)),
+        'adres soldaki sıradan kelimeleri yutmuyor → ' + sf.map(f => f.value).join(' | '));
+
+    // Küçük harfli konumun skoru büyük harflinin altında olmalı (daha zayıf sinyal)
+    const lo = analyzeText('düzce', ALL, 0.4).find(f => f.entity === 'LOCATION');
+    const up = analyzeText('Düzce', ALL, 0.4).find(f => f.entity === 'LOCATION');
+    checkLower(lo && up && lo.score < up.score,
+        'küçük harfli konumun güveni daha düşük (' +
+        (lo && lo.score) + ' < ' + (up && up.score) + ')');
+}
+
+// ============================================================
 // KISMİ TÜR KÜMESİ (per-entity toggle) — regresyon korumaları
 // ============================================================
 // Bu iki hata, tüm türler açıkken görünmüyordu; yalnızca kullanıcı bazı

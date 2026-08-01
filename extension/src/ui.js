@@ -31,16 +31,24 @@ const PERDE_UI_CSS = `
 
 /* ─── Panel ─── */
 .panel {
-  width: 380px; max-width: calc(100vw - 24px);
-  background: #fff; border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.06);
+  width: 420px; max-width: calc(100vw - 24px);
+  background: #fff; border-radius: 14px;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.20), 0 2px 8px rgba(0,0,0,0.08),
+              0 0 0 1px rgba(0,0,0,0.05);
   overflow: hidden;
   display: flex; flex-direction: column;
   max-height: min(78vh, 620px);
+  animation: perde-in .16s cubic-bezier(.2,.8,.3,1);
 }
+@keyframes perde-in {
+  from { opacity: 0; transform: translateY(6px) scale(.985); }
+  to   { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) { .panel, .toast { animation: none; } }
+
 .head {
   display: flex; align-items: center; gap: 8px;
-  padding: 11px 13px; background: #1a1917; color: #fff; flex: none;
+  padding: 12px 14px; background: #1a1917; color: #fff; flex: none;
 }
 .head .title { font-size: 12.5px; font-weight: 600; letter-spacing: -0.01em; }
 .head .spacer { flex: 1; }
@@ -53,64 +61,128 @@ const PERDE_UI_CSS = `
 .lockicon { width: 13px; height: 13px; flex: none; }
 
 .sub {
-  padding: 9px 13px; background: #f7f6f3;
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px; background: #f7f6f3;
   border-bottom: 1px solid #eae9e5; flex: none;
   font-size: 12px; color: #5a5850;
 }
+.sub .count {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 20px; height: 20px; padding: 0 6px; flex: none;
+  background: #1a1917; color: #fff; border-radius: 10px;
+  font-size: 11.5px; font-weight: 600; font-variant-numeric: tabular-nums;
+}
+.sub .types { flex: 1; min-width: 0; }
 .sub b { color: #22211e; font-weight: 600; }
 
 .list { overflow-y: auto; flex: 1; min-height: 0; }
+.list::-webkit-scrollbar { width: 10px; }
+.list::-webkit-scrollbar-thumb {
+  background: #dddcd7; border-radius: 5px; border: 3px solid #fff;
+}
+.list::-webkit-scrollbar-thumb:hover { background: #c8c7c1; }
+
 .row {
-  display: flex; align-items: flex-start; gap: 9px;
-  padding: 8px 13px; border-bottom: 1px solid #f0efeb;
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 9px 14px; border-bottom: 1px solid #f2f1ed;
+  cursor: pointer; transition: background .1s;
 }
 .row:last-child { border-bottom: none; }
-.row input { margin-top: 2px; flex: none; width: 14px; height: 14px; accent-color: #1a1917; cursor: pointer; }
+.row:hover { background: #faf9f6; }
+.row input {
+  margin: 1px 0 0; flex: none; width: 15px; height: 15px;
+  accent-color: #1a1917; cursor: pointer;
+}
 .row .body { flex: 1; min-width: 0; }
 .row .val {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 12px; word-break: break-word; color: #22211e;
+  font-size: 12px; line-height: 1.4; word-break: break-word; color: #22211e;
 }
-.row.open .val { text-decoration: line-through; color: #96948c; }
-.row .meta { font-size: 11px; color: #96948c; margin-top: 1px; }
+.row.open .val { text-decoration: line-through; text-decoration-color: #c4c2bb; color: #96948c; }
+.row .meta {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; color: #96948c; margin-top: 3px;
+}
 .row .tag {
-  display: inline-block; font-size: 10.5px; font-weight: 600;
-  background: #efeee9; color: #5a5850;
-  padding: 1px 5px; border-radius: 4px; margin-right: 5px;
+  display: inline-block; font-size: 10px; font-weight: 600;
+  letter-spacing: .01em; background: #edece7; color: #4a4842;
+  padding: 2px 6px; border-radius: 4px; flex: none;
 }
 .row.low .tag { background: #fdf3e3; color: #8a6420; }
 
-.warn {
-  padding: 9px 13px; background: #fdf3e3; color: #7a5a18;
-  font-size: 11.5px; border-top: 1px solid #f0e3c8; flex: none;
+/* Güven çubuğu — yüzdeyi okumaktan daha hızlı taranıyor.
+   3px'te tire gibi görünüyordu; 5px + belirgin oluk daha okunur. */
+.row .bar {
+  width: 40px; height: 5px; border-radius: 3px; background: #e4e3dd;
+  overflow: hidden; flex: none;
 }
-.warn.risk { background: #fbeae7; color: #8a3428; border-top-color: #f2d4cf; }
+.row .bar i {
+  display: block; height: 100%; border-radius: 3px;
+  background: #6f9179; min-width: 3px;
+}
+.row.low .bar i { background: #cf9a3f; }
+.row.open .bar i { background: #c4c2bb; }
+.row .pct {
+  font-variant-numeric: tabular-nums; min-width: 30px;
+  color: #7d7b74;
+}
+.row .openflag { color: #a63d2f; font-weight: 600; }
+
+.warn {
+  display: flex; gap: 7px; align-items: flex-start;
+  padding: 10px 14px; background: #fdf9f0; color: #7a5a18;
+  font-size: 11.5px; line-height: 1.45; border-top: 1px solid #f0e3c8; flex: none;
+}
+.warn.risk { background: #fdf0ee; color: #8a3428; border-top-color: #f2d4cf; }
+.warn .ico { flex: none; font-weight: 700; opacity: .75; }
 
 .foot {
-  display: flex; align-items: center; gap: 7px;
-  padding: 10px 13px; border-top: 1px solid #eae9e5; flex: none;
-  background: #fff;
+  display: flex; align-items: center; gap: 8px;
+  padding: 11px 14px; border-top: 1px solid #eae9e5; flex: none;
+  background: #fbfaf8;
 }
 .foot .spacer { flex: 1; }
 button.b {
   font-family: inherit; font-size: 12.5px; font-weight: 500;
-  padding: 7px 13px; border-radius: 7px; cursor: pointer;
+  padding: 8px 14px; border-radius: 8px; cursor: pointer;
+  white-space: nowrap;                 /* "Olduğu gibi yapıştır" iki satıra kırılmasın */
   border: 1px solid #dddcd7; background: #fff; color: #22211e;
-  transition: background .12s;
+  transition: background .12s, border-color .12s, box-shadow .12s;
 }
-button.b:hover { background: #f7f6f3; }
-button.b.primary { background: #1a1917; color: #fff; border-color: #1a1917; }
-button.b.primary:hover { background: #333230; }
-button.b.ghost { border-color: transparent; color: #5a5850; padding: 7px 9px; }
-button.b.ghost:hover { background: #f0efeb; }
+button.b:hover { background: #f4f3f0; border-color: #cfcec8; }
+button.b:focus-visible { outline: 2px solid #4a6fa5; outline-offset: 1px; }
+button.b.primary {
+  background: #1a1917; color: #fff; border-color: #1a1917;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.12);
+}
+button.b.primary:hover { background: #333230; border-color: #333230; }
+button.b.ghost { border-color: transparent; background: none; color: #5a5850; padding: 8px 10px; }
+button.b.ghost:hover { background: #efeee9; }
+
+/* Tümünü seç/bırak satırı */
+.bulk {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 14px; border-bottom: 1px solid #f2f1ed; flex: none;
+  font-size: 11.5px; color: #96948c;
+}
+.bulk button {
+  font-family: inherit; font-size: 11.5px; font-weight: 500;
+  background: none; border: none; padding: 0; cursor: pointer;
+  color: #5a5850; text-decoration: underline;
+  white-space: nowrap; flex: none;
+}
+.bulk > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bulk button:hover { color: #22211e; }
+.bulk .spacer { flex: 1; }
 
 /* ─── Kısa bildirim (sessiz mod) ─── */
 .toast {
-  display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: center; gap: 9px;
   background: #1a1917; color: #fff;
-  padding: 9px 13px; border-radius: 9px;
-  box-shadow: 0 4px 18px rgba(0,0,0,0.25);
-  font-size: 12.5px; max-width: 330px;
+  padding: 10px 14px; border-radius: 10px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.28), 0 0 0 1px rgba(255,255,255,0.06);
+  font-size: 12.5px; max-width: 340px;
+  animation: perde-in .16s cubic-bezier(.2,.8,.3,1);
 }
 .toast .u {
   background: none; border: none; color: #9fc3f5; cursor: pointer;
@@ -231,10 +303,19 @@ const PerdeUI = (() => {
             '<div class="head">' + PERDE_LOCK_SVG +
                 '<span class="title">Perde — ' + (isPaste ? 'yapıştırma kontrolü' : 'alan kontrolü') + '</span>' +
                 '<span class="spacer"></span>' +
-                '<button class="x" data-act="close" title="Kapat">&times;</button>' +
+                '<button class="x" data-act="close" title="Kapat (Esc)">&times;</button>' +
             '</div>' +
-            '<div class="sub"><b>' + opts.items.length + ' kişisel veri</b> bulundu — ' +
-                perdeEsc(opts.summaryText) + '</div>' +
+            '<div class="sub">' +
+                '<span class="count" data-role="count">' + opts.items.length + '</span>' +
+                '<span class="types">' + perdeEsc(opts.summaryText) + '</span>' +
+            '</div>' +
+            '<div class="bulk">' +
+                '<span data-role="bulkinfo">Tümü maskelenecek</span>' +
+                '<span class="spacer"></span>' +
+                '<button data-act="all">tümünü maskele</button>' +
+                '<span>·</span>' +
+                '<button data-act="none">tümünü açık bırak</button>' +
+            '</div>' +
             '<div class="list"></div>' +
             '<div class="warn" data-role="warn"></div>' +
             '<div class="foot">' +
@@ -245,41 +326,79 @@ const PerdeUI = (() => {
             '</div>';
 
         const list = p.querySelector('.list');
+        const boxes = [];
+
         opts.items.forEach(it => {
+            const low = it.score != null && it.score < 0.5;
+            const pct = it.score != null ? Math.round(it.score * 100) : null;
             const row = document.createElement('label');
-            row.className = 'row' + (it.score != null && it.score < 0.5 ? ' low' : '');
-            const pct = it.score != null ? ' %' + Math.round(it.score * 100) : '';
+            row.className = 'row' + (low ? ' low' : '');
             row.innerHTML =
                 '<input type="checkbox" checked>' +
                 '<span class="body">' +
                     '<span class="val">' + perdeEsc(it.value) + '</span>' +
-                    '<span class="meta"><span class="tag">' + perdeEsc(it.label) + '</span>' +
-                    (it.score != null && it.score < 0.5 ? 'düşük güven' + pct : 'güven' + pct) + '</span>' +
+                    '<span class="meta">' +
+                        '<span class="tag">' + perdeEsc(it.label) + '</span>' +
+                        (pct != null
+                            ? '<span class="bar"><i style="width:' + pct + '%"></i></span>' +
+                              '<span class="pct">%' + pct + '</span>'
+                            : '') +
+                        (low ? '<span>düşük güven</span>' : '') +
+                        '<span class="openflag" data-role="flag" hidden>açık gidecek</span>' +
+                    '</span>' +
                 '</span>';
             const cb = row.querySelector('input');
+            const flag = row.querySelector('[data-role="flag"]');
+            boxes.push(cb);
             cb.addEventListener('change', () => {
                 if (cb.checked) kept.delete(it.index); else kept.add(it.index);
                 row.classList.toggle('open', !cb.checked);
-                refreshWarn();
+                flag.hidden = cb.checked;
+                refresh();
             });
             list.appendChild(row);
         });
 
         const warn = p.querySelector('[data-role="warn"]');
-        function refreshWarn() {
+        const countEl = p.querySelector('[data-role="count"]');
+        const bulkInfo = p.querySelector('[data-role="bulkinfo"]');
+
+        function refresh() {
+            const maskCount = opts.items.length - kept.size;
+            countEl.textContent = maskCount;
+            // Kısa tutuluyor: uzun metin toplu seçim satırını iki satıra kırıyordu
+            bulkInfo.textContent = kept.size === 0
+                ? 'Tümü maskelenecek'
+                : maskCount + '/' + opts.items.length + ' maskelenecek';
+
             if (kept.size > 0) {
                 warn.className = 'warn risk';
-                warn.textContent = kept.size + ' veri AÇIK gidecek — işaretini kaldırdığın satırlar ' +
-                    'gerçek haliyle karşı tarafa ulaşır.';
+                warn.innerHTML = '<span class="ico">!</span><span>' + kept.size +
+                    ' veri <b>açık</b> gidecek — işaretini kaldırdığın satırlar ' +
+                    'gerçek haliyle karşı tarafa ulaşır.</span>';
             } else {
                 warn.className = 'warn';
-                warn.textContent = 'Otomatik tespit eksik kalabilir; listeyi kendin de gözden geçir. ' +
+                warn.innerHTML = '<span class="ico">i</span><span>' +
+                    'Otomatik tespit eksik kalabilir; listeyi kendin de gözden geçir. ' +
                     (opts.styleName === 'token'
-                        ? 'Token\'lar bu tarayıcıda tutulur, cevabı Alt+Shift+D ile çözebilirsin.'
-                        : 'Bu stil geri çevrilemez.');
+                        ? 'Cevabı Alt+Shift+D ile çözebilirsin.'
+                        : 'Bu stil geri çevrilemez.') +
+                    '</span>';
             }
         }
-        refreshWarn();
+        refresh();
+
+        function setAll(checked) {
+            kept.clear();
+            boxes.forEach((cb, i) => {
+                cb.checked = checked;
+                const row = cb.closest('.row');
+                row.classList.toggle('open', !checked);
+                row.querySelector('[data-role="flag"]').hidden = checked;
+                if (!checked) kept.add(opts.items[i].index);
+            });
+            refresh();
+        }
 
         p.addEventListener('click', e => {
             const act = e.target && e.target.getAttribute && e.target.getAttribute('data-act');
@@ -289,13 +408,21 @@ const PerdeUI = (() => {
             else if (act === 'cancel') opts.onCancel();
             else if (act === 'close') { hide(); if (opts.onClose) opts.onClose(); }
             else if (act === 'settings') opts.onSettings();
+            else if (act === 'all') setAll(true);
+            else if (act === 'none') setAll(false);
         });
-        // Panelde tıklamak sayfanın odağını kaçırmasın (editörler odağı kaybedince state bozuyor)
-        p.addEventListener('mousedown', e => { if (e.target.tagName !== 'INPUT') e.preventDefault(); });
+        // Panelde tıklamak sayfanın odağını kaçırmasın (editörler odağı kaybedince
+        // state bozuyor); onay kutuları ve düğmeler hariç.
+        p.addEventListener('mousedown', e => {
+            const t = e.target;
+            if (t.tagName !== 'INPUT' && t.tagName !== 'BUTTON' && !t.closest('label.row')) {
+                e.preventDefault();
+            }
+        });
 
         wrap.appendChild(p);
         const h = Math.min(p.offsetHeight || 340, Math.round(window.innerHeight * 0.78));
-        placeNear(opts.anchorEl, 380, h);
+        placeNear(opts.anchorEl, 420, h);
         onDismiss = opts.onCancel ? () => { hide(); if (opts.onClose) opts.onClose(); } : null;
         return p;
     }
@@ -351,7 +478,7 @@ const PerdeUI = (() => {
         });
         wrap.appendChild(p);
         const h = Math.min(p.offsetHeight || 380, Math.round(window.innerHeight * 0.78));
-        centerBottom(380, h);
+        centerBottom(420, h);
     }
 
     function dismissOutside() { if (onDismiss) onDismiss(); else hide(); }

@@ -673,6 +673,35 @@ function detectOrganizations(text) {
     return findings;
 }
 
+// Küçük harfle yazılmış yer adı, günlük Türkçede başka bir anlamı olan adlar.
+// Bunlar yalnızca yakınında bir yer ipucu varsa LOCATION sayılır — yoksa
+// "baş ağrısı", "bir bardak çay", "ordu birliği" hepsi konum olurdu.
+const LOC_AMBIGUOUS_LOWER = new Set([
+    'van', 'ordu', 'uşak', 'batman', 'aydın', 'tokat', 'ağrı', 'kars',  // il + günlük kelime
+    'konak', 'adalar', 'fatih', 'yıldırım',                             // ilçe + kelime/özel ad
+]);
+
+// Yer ipucu kelimeleri. Türkçe harfler \w'ye girmediği için \b güvenilmez
+// ("değil" içindeki "il" yanlış eşleşir); bu yüzden kelimelere bölüp
+// küme üyeliğine bakıyoruz.
+const LOC_CUE_WORDS = new Set([
+    'il', 'ili', 'ilinde', 'ilçe', 'ilçesi', 'ilçesinde', 'semt', 'semti',
+    'mahalle', 'mahallesi', 'mahallesinde', 'mah', 'köy', 'köyü', 'köyünde',
+    'cadde', 'caddesi', 'cad', 'sokak', 'sokağı', 'sok', 'bulvar', 'bulvarı', 'blv',
+    'adres', 'adresi', 'adresinde', 'adresine', 'ikamet', 'ikametgah',
+    'oturuyor', 'oturmakta', 'doğumlu', 'nüfusa', 'apartmanı', 'apt',
+    'blok', 'daire', 'kat', 'no',
+]);
+
+function hasLocCue(text, start, end) {
+    const around = trLower(text.substring(Math.max(0, start - 45),
+                                          Math.min(text.length, end + 45)));
+    for (const w of around.split(/[^a-zçğıöşü0-9]+/)) {
+        if (LOC_CUE_WORDS.has(w)) return true;
+    }
+    return false;
+}
+
 function detectLocations(text) {
     const findings = [];
 
@@ -704,9 +733,43 @@ function detectLocations(text) {
         }
     }
 
+    // Küçük harfle yazılmış il/ilçe adları. Büyük harf koşulu resmi belge için
+    // doğru ama kullanıcı sohbette "düzce cumayeri" yazıyor ve tamamı kaçıyordu.
+    // Günlük kelimeyle çakışan adlar (van, ordu, ağrı…) yalnızca yer ipucu varsa.
+    const lowerWordRe = /(?:^|[\s,.:;!?()\[\]{}’"\/\-])([a-zçğıöşü][a-zçğıöşü]+)/g;
+    let lwm;
+    while ((lwm = lowerWordRe.exec(text)) !== null) {
+        const word = lwm[1];
+        const isProvince = TR_PROVINCES.has(word);
+        const isDistrict = !isProvince && TR_DISTRICTS.has(word);
+        if (!isProvince && !isDistrict) continue;
+
+        const s = lwm.index + lwm[0].indexOf(word);
+        const e = s + word.length;
+        if (findings.some(f => s < f.end && e > f.start)) continue;   // zaten kapsanmış
+        if (LOC_AMBIGUOUS_LOWER.has(word) && !hasLocCue(text, s, e)) continue;
+
+        // Küçük harf daha zayıf bir sinyal: skoru büyük harfli eşlemenin altında
+        findings.push({
+            entity: 'LOCATION',
+            value: word,
+            start: s,
+            end: e,
+            score: isProvince ? 0.55 : 0.45,
+            source: 'dict-lower',
+        });
+    }
+
     // Address patterns (street/avenue + optional number)
     const addressPatterns = [
+        // (a) Büyük harfli ad: son eke kadar en fazla 3 kelime.
         /((?:[A-ZÇĞİÖŞÜ][a-zçğıöşüA-ZÇĞİÖŞÜ]*\s+){1,3}(?:[Cc]addesi|[Cc]adde|[Cc]ad\.|[Ss]okak|[Ss]ok\.|[Ss]okağı|[Bb]ulvarı|[Bb]lv\.|[Mm]ahallesi|[Mm]ah\.|[Kk]öyü|[Ss]itesi|[Aa]pt\.|[Aa]partmanı)(?:\s+(?:No|no|NO)[:\.]?\s*\d+(?:\/\d+)?)?)/g,
+        // (b) Küçük harfli ad ("cumayeri mahallesi") — kullanıcılar sohbette
+        //     küçük harf yazıyor ve bu tamamen kaçıyordu. Burada son ekten
+        //     hemen önceki TEK kelime alınır: çok kelimeye izin verilse
+        //     "maliki bulunduğum bağlarbaşı mah." gibi sıradan cümle parçaları
+        //     da adres sanılırdı (bunun regresyon testi test.js'te var).
+        /((?:^|(?<=[\s,.:;!?()"’]))[a-zçğıöşü][a-zçğıöşü]*\s+(?:[Cc]addesi|[Cc]adde|[Cc]ad\.|[Ss]okak|[Ss]ok\.|[Ss]okağı|[Bb]ulvarı|[Bb]lv\.|[Mm]ahallesi|[Mm]ah\.|[Kk]öyü|[Ss]itesi|[Aa]pt\.|[Aa]partmanı)(?:\s+(?:No|no|NO)[:\.]?\s*\d+(?:\/\d+)?)?)/g,
     ];
 
     // "sitesi" eki konut sitesi değil web sitesi olan kalıplar (LOCATION değil)

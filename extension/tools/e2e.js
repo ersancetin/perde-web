@@ -205,7 +205,9 @@ function stageExtension() {
     check('textarea boş kaldı', (await val('#ta')) === '', JSON.stringify(await val('#ta')));
     let panel = await shadowText();
     check('panel açıldı', /yapıştırma kontrolü/.test(panel), panel.slice(0, 200));
-    check('bulgu sayısı gösterildi', /kişisel veri/.test(panel));
+    check('bulgu sayısı rozette gösterildi', /\b\d+\b/.test(panel), panel.slice(0, 120));
+    check('tür özeti gösterildi', /Kişi|TC Kimlik|IBAN/.test(panel));
+    check('toplu seçim satırı var', /Tümü maskelenecek/.test(panel), panel.slice(0, 200));
     check('TC Kimlik etiketi listelendi', /TC Kimlik/.test(panel));
     check('IBAN etiketi listelendi', /IBAN/.test(panel));
 
@@ -216,6 +218,16 @@ function stageExtension() {
     check('token yerleşti', /\[KISI_1\]/.test(v), v.slice(0, 160));
     check('maskelenmeyen metin korundu', v.includes('ihtar gönderdi'), v.slice(0, 200));
     for (const s of SECRETS) check('sızmadı: ' + s, !v.includes(s));
+
+    section('toplu "tümünü açık bırak"');
+    await clearField('#ta');
+    await pasteInto('#ta', LEGAL);
+    await clickInShadow('tümünü açık bırak');
+    let bulk = await shadowText();
+    check('hepsi açık işaretlendi', /açık gidecek/.test(bulk), bulk.slice(0, 260));
+    await clickInShadow('Maskeli yapıştır');
+    v = await val('#ta');
+    check('tümü açıkken metin maskelenmez', v.trim() === LEGAL.trim(), JSON.stringify(v.slice(0, 80)));
 
     section('"Olduğu gibi yapıştır"');
     await clearField('#ta');

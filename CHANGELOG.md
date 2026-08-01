@@ -12,6 +12,20 @@ All notable changes to Perde Web are documented here.
 - Token map lives in `chrome.storage.session` — memory only, never written to disk, gone when the browser closes, and clearable from the popup. This is **stricter than the web app's `localStorage`**, which deliberately survives reloads.
 - Deliberately no `<all_urls>`: a fixed https allowlist of AI sites, with opt-in per-site additions registered at runtime. Password fields are never touched. **151 new unit tests** covering profile resolution, site scoping, overlap dedupe, all three mask styles, token round-trip, real-engine end-to-end behaviour, and `manifest.json` integrity (declared files exist, load order, no broad permissions).
 
+### Fixed — lowercase place names were not detected at all
+Reported: `ersan çetin, cumayeri mahallesi, düzce` masked only the name. The person gazetteer is case-tolerant, but `detectLocations` required an initial capital — correct for formal filings, wrong for chat, where people type lowercase. `düzce`, `istanbul kadıköy`, `cumayeri mahallesi` all produced nothing.
+
+Two changes in `ner-engine.js`, both deliberately conservative:
+- **A lowercase gazetteer pass** for provinces/districts, scored below the capitalised match (0.55/0.45 vs 0.6/0.5) since lowercase is a weaker signal. Eleven gazetteer entries collide with everyday Turkish words (`van`, `ordu`, `ağrı`, `uşak`, `batman`, `aydın`, `tokat`, `kars`, `konak`, `adalar`, `fatih`, `yıldırım`) — those are accepted only when a location cue (`ili`, `ilçesi`, `mahallesi`, `adresinde`, `ikamet`, `doğumlu`, …) appears within 45 characters, so `sağ kolumda şiddetli ağrı var` and `bir bardak çay içtik` stay clean while `ağrı ilçesinde oturuyor` is caught. Cue matching tokenises the text rather than using `\b`, which is unreliable next to Turkish letters (`\bil` matches inside `değil`).
+- **The suffix-anchored address pattern accepts a lowercase name**, which is the only path that catches `cumayeri mahallesi` (Cumayeri is not in the gazetteer — the `Mahallesi` suffix is what identifies it). Restricted to the **single** word before the suffix: allowing the original 1–3 words in lowercase made the span swallow ordinary prose (`Maliki bulunduğum Bağlarbaşı Mah.`), which the existing test suite caught immediately and which holdout precision confirmed. Capitalised names keep the multi-word form.
+
+Benchmark held at 97.5% and holdout at 99.5% (a first attempt dropped holdout F1 to 99.2% before the single-word restriction). Core tests 2267 → **2299**, covering both directions: lowercase places detected, ambiguous words left alone without a cue, and the span not over-extending.
+
+### Changed — paste panel polish and a bulk toggle
+The panel got a visual pass: wider (420px so button labels stay on one line), softer elevation, a subtle entrance transition that respects `prefers-reduced-motion`, hover states, a styled scrollbar, and a count badge instead of a prose summary. Each row now shows a confidence bar next to the type chip rather than a bare percentage, and rows left open are struck through with an explicit red "açık gidecek" flag. New **tümünü maskele / tümünü açık bırak** row for bulk selection, with a live `N/M maskelenecek` readout. Browser test 61 → **65** checks.
+
+The popup's "Dene" placeholder no longer doubles as example data — there is an **"Örnek metin doldur"** button with a realistic synthetic petition sentence, so the field starts empty with a short instruction instead of a long hint.
+
 ### Fixed — the default profile did not mask place names, and its name said otherwise
 Reported from real use: typing `Düzce Cumayeri` or `Cumayeri Mahallesi` masked nothing. The engine detects all of them correctly — the bug was the extension's profile design. The default profile excluded `LOCATION` on the theory that place names are noise in casual chat. For a Turkish legal/KVKK tool that is simply wrong: neighbourhood, district and city are core identifying data, and `Düzce Cumayeri Mahallesi No:5` is effectively someone's address.
 

@@ -187,6 +187,18 @@ for (const key of ['mode', 'profile', 'style']) {
 
 $('probe').addEventListener('input', runProbe);
 
+// Örnek metin: gerçekçi bir dilekçe cümlesi — kullanıcının kendi verisini
+// yazmasını beklemeden ne olduğunu görmesi için. Sentetik, gerçek kişi değil.
+const SAMPLE = 'Müvekkilim Ersan Çetin (TC 12345678901), cumayeri mahallesi, ' +
+    'düzce adresinde ikamet etmekte olup, Ziraat Bankası ' +
+    'TR33 0006 1005 1978 6457 8413 26 hesabına yapılan ödemeye ilişkin ' +
+    'ihtarname 0532 123 45 67 numarası üzerinden tebliğ edilmiştir.';
+
+$('probeSample').addEventListener('click', () => {
+    $('probe').value = SAMPLE;
+    runProbe();
+});
+
 $('probeOut').addEventListener('click', e => {
     if (e.target.dataset.act === 'widen') save({ profile: 'tumu' });
 });
