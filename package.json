@@ -4,9 +4,7 @@
   "description": "Client-side PII detection and anonymization for Turkish legal documents",
   "private": true,
   "scripts": {
-    "test": "node test.js && node extension/test.js",
-    "test:ext": "node extension/test.js",
-    "build:ext": "node extension/tools/sync-engine.js && node extension/tools/make-icons.js",
+    "test": "node test.js",
     "benchmark": "node benchmark.js",
     "holdout": "node holdout.js"
   },
