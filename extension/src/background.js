@@ -16,7 +16,7 @@ const DEFAULTS = {
     mode: 'preview',
     style: 'token',
     threshold: 0.4,
-    minLength: 12,
+    minLength: 6,
     typingHints: true,
     disabledEntities: [],
     perSite: {},

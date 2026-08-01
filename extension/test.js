@@ -317,6 +317,27 @@ check('varsayılan açık', EXT_DEFAULT_SETTINGS.enabled === true);
 check('varsayılan eşik makul aralıkta',
     EXT_DEFAULT_SETTINGS.threshold >= 0.35 && EXT_DEFAULT_SETTINGS.threshold <= 0.6);
 
+// minLength, motorun tek başına yakaladığı en kısa kimliklendiriciden aşağıda
+// kalmalı. 12 iken çıplak telefon (11) ve kısa e-posta (9) hiç bakılmadan
+// geçiyordu — eşik "gereksiz işten kaçınma" içindir, sızıntı kaynağı olamaz.
+{
+    const guvenli = extResolveEntities(settingsOf({ profile: 'guvenli' }), ALL);
+    const BARE = ['05321234567', 'ali@x.com', 'a@bc.de', 'a@b.co'];
+    for (const v of BARE) {
+        const f = analyzeText(v, guvenli, EXT_DEFAULT_SETTINGS.threshold);
+        if (!f.length) continue;   // motor bulmuyorsa eşiğin suçu değil
+        check('çıplak "' + v + '" (' + v.length + ' kr) eşik yüzünden atlanmıyor',
+            extShouldIntercept(v, f, EXT_DEFAULT_SETTINGS),
+            'minLength=' + EXT_DEFAULT_SETTINGS.minLength + ' bu değeri eliyor');
+    }
+    check('minLength motorun en kısa tespitini (6 kr) aşmıyor',
+        EXT_DEFAULT_SETTINGS.minLength <= 6);
+    // Ama anlamsız kısa metinlere de bulaşmamalı
+    check('tek kelime "Ahmet" yine atlanır',
+        !extShouldIntercept('Ahmet', [{ entity: 'PERSON_NAME', value: 'Ahmet', start: 0, end: 5, score: 0.9 }],
+            EXT_DEFAULT_SETTINGS));
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 section('manifest.json bütünlüğü');
 

@@ -52,7 +52,11 @@ const EXT_DEFAULT_SETTINGS = {
     // 'token' → [KISI_1] (geri çevrilebilir), 'label' → <Kişi>, 'star' → ****
     style: 'token',
     threshold: 0.4,
-    minLength: 12,
+    // Önemsiz kısa metinlerde boşuna çalışmamak için alt sınır. Bu bir GÜVENLİK
+    // eşiği DEĞİL — motorun tek başına yakalayabildiği en kısa kimliklendiriciye
+    // eşit tutulur (bugün 6: "a@b.co"). Daha yükseğe çekmek doğrudan sızıntı
+    // demek: 12 iken çıplak telefon (11 kr) ve kısa e-posta bakılmadan geçiyordu.
+    minLength: 6,
     typingHints: true,
     disabledEntities: [],
     perSite: {},

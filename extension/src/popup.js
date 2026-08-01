@@ -2,7 +2,7 @@
 
 const DEFAULTS = {
     enabled: true, profile: 'guvenli', mode: 'preview', style: 'token',
-    threshold: 0.4, minLength: 12, typingHints: true,
+    threshold: 0.4, minLength: 6, typingHints: true,
     disabledEntities: [], perSite: {},
 };
 
