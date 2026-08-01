@@ -35,42 +35,6 @@ const SHIELD_SVG = '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1L3
 const MASK_SVG = '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3h12v2H2zM2 7h12v2H2zM2 11h8v2H2z"/></svg>';
 const _ED = typeof ENTITY_DESCRIPTIONS !== 'undefined' ? ENTITY_DESCRIPTIONS : {};
 
-const FRIENDLY_LABELS = {
-    TR_NATIONAL_ID: 'TC Kimlik', TR_LICENSE_PLATE: 'Plaka', TR_VERGI_NO: 'Vergi No',
-    TR_SGK_NO: 'SGK No', TR_MERSIS_NO: 'MERSİS', TR_PASAPORT: 'Pasaport',
-    PERSON_NAME: 'Kişi', ORGANIZATION: 'Kurum', LOCATION: 'Konum', ADDRESS: 'Adres',
-    PHONE_NUMBER: 'Telefon', EMAIL_ADDRESS: 'E-posta', CREDIT_CARD: 'Kredi Kartı',
-    IBAN_CODE: 'IBAN', BANK_ACCOUNT_NO: 'Hesap No', BANK_BRANCH_CODE: 'Şube Kodu',
-    IP_ADDRESS: 'IP', URL: 'URL', DATE_TIME: 'Tarih', DOMAIN: 'Alan Adı',
-    CASE_NUMBER: 'Dosya No', COURT: 'Mahkeme', NOTARY: 'Noter',
-    NOTARY_RECORD: 'Noter Kayıt', DRIVER_LICENSE: 'Ehliyet', CONTEXTUAL_DATE: 'Tarih',
-    TIME: 'Saat', AGE: 'Yaş', OCCUPATION: 'Meslek', POLICY_NUMBER: 'Poliçe',
-    MEDICAL_ID: 'Sağlık No', INVOICE_NO: 'Fatura No', LICENSE_ID: 'Sicil/Lisans',
-    VEHICLE_ID: 'Araç No', EMPLOYEE_ID: 'Personel No', PROPERTY_ID: 'Tapu No',
-    INSURANCE_FILE_NO: 'Sigorta Dosya', REGISTRY_NO: 'Nüfus Kayıt',
-    GOV_DOCUMENT_ID: 'Resmi Belge', EINVOICE_UUID: 'e-Fatura', CHECK_SERIAL_NO: 'Çek No',
-    BARCODE_ID: 'Barkod', ENFORCEMENT_ID: 'İcra No', BARO_SICIL: 'Baro Sicil',
-    TRADE_REGISTRY_NO: 'Ticaret Sicil', MEDIATION_NO: 'Arabuluculuk',
-    ARBITRATION_NO: 'Tahkim No', WARRANT_NO: 'Tutuklama', PAROLE_ID: 'Denetim No',
-    COMMERCIAL_GAZETTE: 'Ticaret Gazetesi', BOND_PROMISSORY: 'Senet/Bono',
-    SALARY_AMOUNT: 'Maaş', SWIFT_BIC: 'SWIFT', MAC_ADDRESS: 'MAC', IMEI: 'IMEI',
-    USERNAME: 'Kullanıcı Adı', SOCIAL_PROFILE: 'Sosyal Profil', DEVICE_ID: 'Cihaz ID',
-    KEP_ADDRESS: 'KEP', CRYPTO: 'Kripto', FINANCIAL_ID: 'Mali No',
-    CUSTOMS_DECLARATION: 'Gümrük Beyanı', LETTER_OF_CREDIT: 'Akreditif',
-    BILL_OF_LADING: 'Konşimento', GENDER: 'Cinsiyet', NATIONALITY: 'Uyruk',
-    MARITAL_STATUS: 'Medeni Hal', BIRTH_PLACE: 'Doğum Yeri',
-    EDUCATION_LEVEL: 'Eğitim', MILITARY_STATUS: 'Askerlik', BLOOD_TYPE: 'Kan Grubu',
-    HEALTH_CONDITION: 'Sağlık Durumu', RELIGION: 'Din', ETHNICITY: 'Etnisite',
-    POLITICAL_VIEW: 'Siyasi Görüş', UNION_MEMBERSHIP: 'Sendika',
-    CRIMINAL_RECORD: 'Sabıka', SEXUAL_LIFE: 'Cinsel Yaşam',
-    BIOMETRIC_DATA: 'Biyometrik', DISABILITY_STATUS: 'Engellilik',
-    US_SSN: 'US SSN', US_ITIN: 'US ITIN', US_PASSPORT: 'US Pasaport',
-    US_BANK_NUMBER: 'US Banka', MEDICAL_LICENSE: 'Tıbbi Lisans',
-    UK_NHS: 'UK NHS', ES_NIF: 'ES NIF', DE_TAX_ID: 'DE Vergi',
-    FR_INSEE: 'FR INSEE', IT_FISCAL_CODE: 'IT Fiskal', IN_AADHAAR: 'IN Aadhaar',
-    LEGAL_CITATION: 'Yargı Atfı', MONETARY_AMOUNT: 'Tutar',
-    MANUAL: 'Manuel',
-};
 
 function escapeHTML(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
 

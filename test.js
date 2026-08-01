@@ -7291,6 +7291,93 @@ function aiwfFindAt(text, val, from) { const i = text.indexOf(val, from || 0); r
 }
 
 // ============================================================
+// KISMİ TÜR KÜMESİ (per-entity toggle) — regresyon korumaları
+// ============================================================
+// Bu iki hata, tüm türler açıkken görünmüyordu; yalnızca kullanıcı bazı
+// türleri kapattığında (UI'daki tür anahtarları / eklenti profilleri) ortaya
+// çıkıyordu. Benchmark ve holdout tüm türleri açık çalıştırdığı için
+// yakalayamaz — bu yüzden burada açıkça kilitliyoruz.
+
+console.log('\n--- Kısmi Tür Kümesi ---');
+
+function checkSubset(cond, label) {
+    total++;
+    if (cond) { pass++; } else { fail++; console.log('  FAIL (subset): ' + label); }
+}
+
+function subsetFindings(text, entities, threshold) {
+    return analyzeText(text, new Set(entities), threshold === undefined ? 0.4 : threshold);
+}
+
+{
+    const allTypes = Object.keys(ENTITY_LABELS);
+
+    // 1) LOCATION kapalı + ADDRESS açık: etiketsiz adres blokları yine birleşmeli.
+    //    (mergeAddressFragments parçaları allFindings'ten okuyordu; LOCATION
+    //     kapalıyken parçalar oraya hiç girmediği için adres tümüyle kaçıyordu.)
+    const addrText = 'Bağdat Caddesi No:12 Kadıköy/İstanbul adresinde ikamet etmektedir.';
+    const noLoc = allTypes.filter(e => e !== 'LOCATION');
+    const addrNoLoc = subsetFindings(addrText, noLoc).filter(f => f.entity === 'ADDRESS');
+    checkSubset(addrNoLoc.length > 0, 'LOCATION kapalıyken ADDRESS bloğu yine bulunur');
+    checkSubset(addrNoLoc.some(f => /Bağdat Caddesi/.test(f.value) && /Kadıköy/.test(f.value)),
+        'LOCATION kapalıyken ADDRESS tüm parçaları kapsar');
+    checkSubset(!subsetFindings(addrText, noLoc).some(f => f.entity === 'LOCATION'),
+        'LOCATION kapalıyken LOCATION bulgusu sızmaz');
+
+    // ADDRESS de kapalıysa hiçbir adres bulgusu üretilmemeli
+    const neither = allTypes.filter(e => e !== 'LOCATION' && e !== 'ADDRESS');
+    checkSubset(!subsetFindings(addrText, neither).some(f => f.entity === 'ADDRESS' || f.entity === 'LOCATION'),
+        'LOCATION+ADDRESS kapalıyken ikisi de üretilmez');
+
+    // Tüm türler açıkken davranış değişmemeli
+    const addrAll = subsetFindings(addrText, allTypes);
+    checkSubset(addrAll.some(f => f.entity === 'ADDRESS'), 'tüm türler açıkken ADDRESS korunur');
+    checkSubset(addrAll.some(f => f.entity === 'LOCATION'), 'tüm türler açıkken LOCATION korunur');
+
+    // 2) detectOrganizations kurum son ekine göre COURT/NOTARY de üretiyor;
+    //    kapatılan tür sızmamalı.
+    const courtText = 'İstanbul 3. Asliye Hukuk Mahkemesi kararı ve Kadıköy 5. Noterliği işlemi.';
+    const noCourt = allTypes.filter(e => e !== 'COURT');
+    checkSubset(!subsetFindings(courtText, noCourt).some(f => f.entity === 'COURT'),
+        'COURT kapalıyken COURT sızmaz');
+    checkSubset(subsetFindings(courtText, noCourt).some(f => f.entity === 'NOTARY'),
+        'COURT kapalıyken NOTARY etkilenmez');
+
+    const noNotary = allTypes.filter(e => e !== 'NOTARY');
+    checkSubset(!subsetFindings(courtText, noNotary).some(f => f.entity === 'NOTARY'),
+        'NOTARY kapalıyken NOTARY sızmaz');
+    checkSubset(subsetFindings(courtText, noNotary).some(f => f.entity === 'COURT'),
+        'NOTARY kapalıyken COURT etkilenmez');
+
+    // ORGANIZATION kapalı ama COURT açık: mahkeme yine bulunmalı
+    const noOrg = allTypes.filter(e => e !== 'ORGANIZATION');
+    checkSubset(subsetFindings(courtText, noOrg).some(f => f.entity === 'COURT'),
+        'ORGANIZATION kapalıyken COURT yine bulunur');
+    checkSubset(!subsetFindings(courtText, noOrg).some(f => f.entity === 'ORGANIZATION'),
+        'ORGANIZATION kapalıyken ORGANIZATION sızmaz');
+
+    // Üçü de kapalıysa hiçbiri üretilmemeli
+    const noneOfThree = allTypes.filter(e => !['ORGANIZATION', 'COURT', 'NOTARY'].includes(e));
+    checkSubset(!subsetFindings(courtText, noneOfThree)
+        .some(f => ['ORGANIZATION', 'COURT', 'NOTARY'].includes(f.entity)),
+        'ORGANIZATION+COURT+NOTARY kapalıyken üçü de üretilmez');
+
+    // Tüm türler açıkken ikisi de bulunmaya devam etmeli
+    const courtAll = subsetFindings(courtText, allTypes);
+    checkSubset(courtAll.some(f => f.entity === 'COURT'), 'tüm türler açıkken COURT korunur');
+    checkSubset(courtAll.some(f => f.entity === 'NOTARY'), 'tüm türler açıkken NOTARY korunur');
+
+    // 3) Kapatılan tür ne olursa olsun çıktı o türü içermemeli (genel invariant)
+    for (const off of ['PERSON_NAME', 'IBAN_CODE', 'TR_NATIONAL_ID', 'PHONE_NUMBER', 'EMAIL_ADDRESS']) {
+        const text = 'Ahmet Yılmaz, TC 12345678901, IBAN TR330006100519786457841326, ' +
+                     'tel 0532 123 45 67, e-posta ahmet@example.com';
+        const subset = allTypes.filter(e => e !== off);
+        checkSubset(!subsetFindings(text, subset).some(f => f.entity === off),
+            off + ' kapalıyken çıktıda görünmez');
+    }
+}
+
+// ============================================================
 // RESULTS
 // ============================================================
 

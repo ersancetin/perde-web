@@ -876,12 +876,15 @@ function detectAddressBlocks(text, locationFindings) {
 // sokak sinyali olan) tek bir ADDRESS bloğuna birleştirir. Etiketsiz adresler
 // "X Cad. No:5 İlçe/İl" tek parça maskelensin diye. Muhafazakâr: parçalar
 // arasında yalnızca boşluk/ "/" / "," / "-" / "." olabilir (cümle kelimesi yok).
-function mergeAddressFragments(allFindings, text, enabledEntities) {
+// extraParts: allFindings'e eklenmeyen ama birleştirmede kullanılacak konum
+// parçaları (LOCATION kapalı, ADDRESS açık durumu için).
+function mergeAddressFragments(allFindings, text, enabledEntities, extraParts) {
     if (!enabledEntities.has('ADDRESS')) return;
     const STREET = /(?:caddes[İiı]|cadde|cad\.|sokak|sok\.|soka[ğg][İiı]|bulvar|blv|mahalles[İiı]|mah\.|mahalle|köyü|sites[İiı]|apartman|no\s*:?\s*\d)/i;
     const ROLE = /^(?:davac[ıi]|daval[ıi]|bor[çc]lu|alacakl[ıi]|müvekk[İi]l[İi]?|san[ıi][ğk]?[ıi]?|müştek[İi]|vek[İi]l[İi]|muhatap|keş[İi]dec[İi]|mağdur|adres[İi]?|[İi]kametg[âa]h[ıi]?)\s+/i;
     const parts = allFindings
         .filter(f => f.entity === 'LOCATION' || f.entity === 'ADDRESS')
+        .concat(extraParts || [])
         .sort((a, b) => a.start - b.start);
     const toRemove = new Set();
     const toAdd = [];
@@ -1842,8 +1845,13 @@ function runDictionaryNER(text, enabledEntities, scoreThreshold) {
     if (enabledEntities.has('PERSON_NAME')) {
         allFindings.push(...detectNamesDict(text));
     }
-    if (enabledEntities.has('ORGANIZATION')) {
-        allFindings.push(...detectOrganizations(text));
+    // detectOrganizations, kurum son ekine göre ORGANIZATION / COURT / NOTARY
+    // üretir; bu yüzden üçünden biri açıksa çalıştırıp çıktısını tür tür süzüyoruz.
+    // (Yalnızca ORGANIZATION'a bakılsa, kapatılan COURT/NOTARY yine sızardı.)
+    if (enabledEntities.has('ORGANIZATION') || enabledEntities.has('COURT') || enabledEntities.has('NOTARY')) {
+        for (const f of detectOrganizations(text)) {
+            if (enabledEntities.has(f.entity)) allFindings.push(f);
+        }
     }
 
     let locationFindings = [];
@@ -1993,8 +2001,12 @@ function runDictionaryNER(text, enabledEntities, scoreThreshold) {
     const labelValueFindings = detectLabeledValues(text, allFindings, enabledEntities);
     allFindings.push(...labelValueFindings);
 
-    // Bitişik konum parçalarını tek ADDRESS bloğuna birleştir
-    mergeAddressFragments(allFindings, text, enabledEntities);
+    // Bitişik konum parçalarını tek ADDRESS bloğuna birleştir.
+    // LOCATION kapalı, ADDRESS açıkken parçalar allFindings'e hiç girmediği için
+    // birleştiriciye ayrıca veriliyor — yoksa etiketsiz adresler ("Bağdat Caddesi
+    // No:12 Kadıköy/İstanbul") LOCATION kapatıldığında tümüyle maskesiz kalırdı.
+    mergeAddressFragments(allFindings, text, enabledEntities,
+        enabledEntities.has('LOCATION') ? [] : locationFindings);
 
     return allFindings.filter(f => f.score >= scoreThreshold);
 }

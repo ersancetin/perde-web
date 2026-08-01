@@ -2,3 +2,7 @@ node_modules/
 .DS_Store
 *.log
 .env
+
+# Eklenti build çıktısı (kaynak kökte; npm run build:ext ile üretilir)
+extension/engine/
+extension/icons/

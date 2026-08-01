@@ -4,6 +4,13 @@ Turkce hukuk belgeleri icin kisisel veri tespiti ve maskeleme yardimcisi. Tamame
 
 > **Uyari:** Otomatik tespitler hata veya eksiklik icerebilir. Ciktilar kullanici tarafindan kontrol edilmelidir. Bu arac, tek basina KVKK uyumlulugu veya hukuken anonim hale getirme garantisi saglamaz.
 
+## Surfaces
+
+- **Web app** (`index.html`) — upload or paste a document, review findings in a table, export. Handles PDF/DOCX/UDF + OCR.
+- **Chrome extension** (`extension/`) — intercepts what you *paste into an AI site* and masks it before it reaches the page, with reversible `[KISI_1]` tokens you can decode from the AI's reply. Prototype; see [extension/README.md](extension/README.md).
+
+Both run the same detection engine, entirely in the browser.
+
 ## Features
 
 - 102 entity types optimized for Turkish legal, financial, and medical documents
@@ -50,9 +57,10 @@ Every prompt includes guardrails instructing the model to (a) preserve the token
 ## Development
 
 ```bash
-npm test           # 2247 unit tests (incl. AI workflow round-trip + regression guards)
+npm test           # 2418 unit tests (2267 core + 151 extension)
 npm run benchmark  # 15-document co-developed F1 benchmark (CI-gated ≥95%)
 npm run holdout    # 50-document INDEPENDENT holdout set (CI-gated on recall/F1)
+npm run build:ext  # build the Chrome extension into extension/engine + extension/icons
 ```
 
 All three run in CI and are mandatory; the holdout exits non-zero if masking-coverage recall < 94% or F1 < 93% (an anti-regression floor, not the reported score).
@@ -84,7 +92,13 @@ test.js             Unit tests (all test data is synthetic)
 bench-lib.js        Shared scoring (IoU/value matching, P/R/F1)
 benchmark.js        Co-developed F1 benchmark (15 docs)
 holdout.js          Independent holdout set (50 docs) + dual-metric report
+extension/          Chrome extension (MV3) — shares the engine, see extension/README.md
 ```
+
+The extension does **not** vendor its own copy of the engine: `npm run build:ext`
+copies `dictionaries.js`, `recognizers.js`, `ner-engine.js` and `ai-workflow.js`
+into `extension/engine/` (gitignored). The single source stays at the repo root,
+so gazetteer and recognizer improvements reach both surfaces at once.
 
 ## Threat Model
 
