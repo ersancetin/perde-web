@@ -4,6 +4,27 @@ All notable changes to Perde Web are documented here.
 
 ## [Unreleased]
 
+### Fixed — two detector bugs found while building a demo paragraph
+* **Court headers absorbed text across a sentence boundary.** The backward walk that
+  collects a court's name accepted *any* word starting with a digit, so
+  `vergi no 1234567801. Dosya Düzce 2. Asliye Hukuk Mahkemesi` came out as a single
+  `COURT` span. Two things went wrong at once: the sentence was mangled, and the tax
+  number got masked under the wrong type. Only a short ordinal (`3.`, `12.`) counts as
+  part of a header now; any other number is the left boundary. Legitimate names
+  (`İstanbul 3. Asliye Hukuk Mahkemesi`, `İZMİR 3. ASLİYE TİCARET MAHKEMESİ`,
+  `Ankara 12. İş Mahkemesi`, `Kadıköy 5. Noterliği`) are unchanged.
+* **`BLOOD_TYPE` required a colon, so the natural spelling leaked.** The symbol
+  patterns were anchored on `kan grubu[:\-]`, which means `kan grubu A Rh+` — ordinary
+  Turkish — was never detected at all. Blood type is KVKK special-category data, so
+  this was a straight leak. The separator is now optional and `Rh` is optional in the
+  word form (`kan grubu A pozitif`). The label itself stays mandatory, so
+  `pozitif bir insan` and `sonuç negatif çıktı` are still not blood types.
+
+Both were caught while writing a demo paragraph for the extension, not by the test
+suites: the benchmark and holdout documents happen to write courts and blood types in
+the exact forms that already worked. Core tests 2299 → **2323**; benchmark held at
+97.5% and holdout at 99.5%.
+
 ### Changed — the Chrome extension moved to its own repository
 The extension now lives at **[ersancetin/perde-chrome](https://github.com/ersancetin/perde-chrome)** and `extension/` is gone from this repo. It was developed here through v0.2.0; that history stays in this file below, and the new repo's CHANGELOG carries it forward from v0.3.0 (whose headline is a **send gate** — intercepting Enter and the send button, which is where hand-typed data actually leaves).
 

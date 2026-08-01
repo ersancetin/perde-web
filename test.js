@@ -7291,6 +7291,90 @@ function aiwfFindAt(text, val, from) { const i = text.indexOf(val, from || 0); r
 }
 
 // ============================================================
+// MAHKEME BAŞLIĞI SPAN SINIRI
+// ============================================================
+// Geriye doğru yürüyüş rakamla başlayan HER kelimeyi başlığa katıyordu, bu da
+// span'i cümle sınırının ötesine taşırıyordu: "vergi no 1234567801. Dosya Düzce
+// 2. Asliye Hukuk Mahkemesi" tek bir COURT oluyordu. Hem cümle parçalanıyor hem
+// vergi numarası yanlış türle maskeleniyordu. Yalnızca kısa sıra sayısı
+// ("3.", "12.") başlığın parçası sayılır.
+
+console.log('\n--- Mahkeme Başlığı Span Sınırı ---');
+
+function checkCourt(cond, label) {
+    total++;
+    if (cond) { pass++; } else { fail++; console.log('  FAIL (court): ' + label); }
+}
+
+function courtOf(text) {
+    const f = analyzeText(text, ALL, 0.4).find(x => x.entity === 'COURT' || x.entity === 'NOTARY');
+    return f ? f.value : null;
+}
+
+{
+    // Uzun sayı başlığa katılmamalı
+    const c1 = courtOf('vergi no 1234567801. Dosya Düzce 2. Asliye Hukuk Mahkemesi');
+    checkCourt(c1 && !c1.includes('1234567801'), 'vergi numarası mahkeme başlığına katılmıyor: ' + c1);
+    const c2 = courtOf('Tutar 5000. Düzce 2. Asliye Hukuk Mahkemesi');
+    checkCourt(c2 === 'Düzce 2. Asliye Hukuk Mahkemesi', 'tutar başlığa katılmıyor: ' + c2);
+    const c3 = courtOf('Dosya 2024 İstanbul 3. Asliye Hukuk Mahkemesi');
+    checkCourt(c3 && !c3.includes('2024'), 'çıplak yıl başlığa katılmıyor: ' + c3);
+
+    // Meşru mahkeme adları bozulmamalı
+    for (const [t, want] of [
+        ['İstanbul 3. Asliye Hukuk Mahkemesi', 'İstanbul 3. Asliye Hukuk Mahkemesi'],
+        ['Ankara 12. İş Mahkemesi', 'Ankara 12. İş Mahkemesi'],
+        ['İZMİR 3. ASLİYE TİCARET MAHKEMESİ', 'İZMİR 3. ASLİYE TİCARET MAHKEMESİ'],
+        ['Kadıköy 5. Noterliği', 'Kadıköy 5. Noterliği'],
+        ['Bursa Cumhuriyet Başsavcılığı', 'Bursa Cumhuriyet Başsavcılığı'],
+    ]) {
+        checkCourt(courtOf(t) === want, 'meşru başlık korunur: ' + t + ' -> ' + courtOf(t));
+    }
+    // Sıra sayısı olmadan da çalışmalı
+    checkCourt(!!courtOf('Düzce Sulh Hukuk Mahkemesi'), 'sıra sayısız mahkeme adı bulunur');
+}
+
+// ============================================================
+// KAN GRUBU (KVKK özel nitelikli)
+// ============================================================
+// Sembol biçimi ("A Rh+") zorunlu iki nokta arıyordu, bu yüzden "kan grubu A Rh+"
+// gibi tamamen doğal bir yazım hiç yakalanmıyordu. Kan grubu özel nitelikli veri;
+// kaçırmak doğrudan sızıntı.
+
+console.log('\n--- Kan Grubu ---');
+
+function checkBlood(cond, label) {
+    total++;
+    if (cond) { pass++; } else { fail++; console.log('  FAIL (blood): ' + label); }
+}
+
+function bloodOf(text) {
+    const f = analyzeText(text, ALL, 0.4).find(x => x.entity === 'BLOOD_TYPE');
+    return f ? f.value : null;
+}
+
+{
+    // İki nokta olmadan
+    for (const t of ['kan grubu A Rh+', 'kan grubu 0 Rh-', 'kan grubu AB Rh+',
+                     'kan grubu B+', 'kan grubu A pozitif', 'kan grubu 0 negatif',
+                     'kan tipi B Rh-']) {
+        checkBlood(!!bloodOf(t), 'iki nokta olmadan bulunur: ' + t);
+    }
+    // İki noktalı hali bozulmamalı
+    for (const t of ['Kan grubu: A Rh+', 'Kan Grubu: 0 Rh-', 'kan grubu - AB+']) {
+        checkBlood(!!bloodOf(t), 'iki noktalı hali korunur: ' + t);
+    }
+    // Etiketsiz "Rh" formu korunur
+    checkBlood(!!bloodOf('Hasta A Rh pozitif olarak kayıtlı'), 'etiketsiz Rh formu bulunur');
+
+    // Yanlış pozitif olmamalı: etiket yoksa ve Rh yoksa konuşma dilinde eşleşmemeli
+    for (const t of ['pozitif bir insan', 'A planı negatif sonuçlandı',
+                     'sonuç negatif çıktı', 'B vitamini eksikliği']) {
+        checkBlood(bloodOf(t) === null, 'kan grubu sanılmıyor: ' + t + ' -> ' + bloodOf(t));
+    }
+}
+
+// ============================================================
 // KÜÇÜK HARFLİ YER ADLARI
 // ============================================================
 // Kullanıcı raporu: "ersan çetin, cumayeri mahallesi, düzce" yazıldığında

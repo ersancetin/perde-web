@@ -59,7 +59,7 @@ Every prompt includes guardrails instructing the model to (a) preserve the token
 ## Development
 
 ```bash
-npm test           # 2299 unit tests (incl. AI workflow round-trip + regression guards)
+npm test           # 2323 unit tests (incl. AI workflow round-trip + regression guards)
 npm run benchmark  # 15-document co-developed F1 benchmark (CI-gated ≥95%)
 npm run holdout    # 50-document INDEPENDENT holdout set (CI-gated on recall/F1)
 ```

@@ -606,9 +606,16 @@ function detectOrganizations(text) {
             const headerWords = [];
             for (let i = words.length - 1; i >= 0; i--) {
                 const w = words[i];
-                if (/^[A-ZÇĞİÖŞÜ0-9]/.test(w) || /^\d+\.$/.test(w)) {
-                    headerWords.unshift(w);
-                } else break;
+                // Kısa sıra sayısı başlığın parçası olabilir: "İstanbul 3. Asliye".
+                if (/^\d{1,3}\.$/.test(w)) { headerWords.unshift(w); continue; }
+                // Rakamla başlayan HER kelimeyi kabul etmek span'i cümle sınırının
+                // ötesine taşırıyordu: "vergi no 1234567801. Dosya Düzce 2. Asliye
+                // Hukuk Mahkemesi" tek bir COURT olarak yakalanıyor, hem cümle
+                // parçalanıyor hem vergi numarası yanlış türle maskeleniyordu.
+                // Sıra sayısı olmayan sayı, başlığın solundaki sınırdır.
+                if (/^\d/.test(w)) break;
+                if (/^[A-ZÇĞİÖŞÜ]/.test(w)) { headerWords.unshift(w); continue; }
+                break;
             }
             const minWords = (entityType === 'COURT' || entityType === 'NOTARY') ? 1 : 2;
             if (headerWords.length < minWords) continue;
@@ -1735,10 +1742,15 @@ function detectPersonalAttributes(origText, enabledEntities) {
     // BLOOD_TYPE — "kan grubu: A Rh+"
     if (enabledEntities.has('BLOOD_TYPE')) {
         const bloodPatterns = [
-            /(?:kan\s*(?:grubu|tipi))\s*[:\-]\s*((?:AB|A|B|0)\s*Rh?\s*[+\-])/gi,
-            /(?:kan\s*(?:grubu|tipi))\s*[:\-]\s*((?:AB|A|B|0)\s*[+\-])/gi,
-            // "Kan grubu A Rh pozitif" — kelime formu, iki nokta opsiyonel
-            /(?:kan\s*(?:grubu|tipi))\s*[:\-]?\s*((?:AB|A|B|0)\s*Rh\s*(?:pozitif|negatif))/gi,
+            // İki nokta OPSİYONEL: "kan grubu A Rh+" tamamen doğal Türkçe ve
+            // zorunlu ayraç yüzünden hiç yakalanmıyordu. Kan grubu KVKK özel
+            // nitelikli veri, kaçırmak doğrudan sızıntı.
+            /(?:kan\s*(?:grubu|tipi))\s*[:\-]?\s*((?:AB|A|B|0)\s*Rh?\s*[+\-])/gi,
+            /(?:kan\s*(?:grubu|tipi))\s*[:\-]?\s*((?:AB|A|B|0)\s*[+\-])/gi,
+            // "Kan grubu A Rh pozitif" — kelime formu, iki nokta opsiyonel.
+            // "Rh" de opsiyonel: "kan grubu A pozitif" doğal Türkçe. Etiket
+            // ("kan grubu") zorunlu olduğu için yanlış pozitif riski yok.
+            /(?:kan\s*(?:grubu|tipi))\s*[:\-]?\s*((?:AB|A|B|0)\s*(?:Rh\s*)?(?:pozitif|negatif))/gi,
             // Etiketsiz: "A Rh pozitif", "AB Rh negatif"
             /\b((?:AB|A|B|0)\s*Rh\s*(?:pozitif|negatif))\b/gi,
         ];
