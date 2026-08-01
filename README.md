@@ -57,7 +57,7 @@ Every prompt includes guardrails instructing the model to (a) preserve the token
 ## Development
 
 ```bash
-npm test           # 2418 unit tests (2267 core + 151 extension)
+npm test           # 2474 unit tests (2267 core + 207 extension)
 npm run benchmark  # 15-document co-developed F1 benchmark (CI-gated ≥95%)
 npm run holdout    # 50-document INDEPENDENT holdout set (CI-gated on recall/F1)
 npm run build:ext  # build the Chrome extension into extension/engine + extension/icons

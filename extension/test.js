@@ -21,16 +21,18 @@ const src = [
 
 const api = new Function(src + `; return {
     ENTITY_LABELS, FRIENDLY_LABELS, analyzeText, deAnonymize,
-    EXT_PROFILES, EXT_DEFAULT_SETTINGS,
-    extResolveEntities, extHostOf, extSiteEnabled, extShouldIntercept,
-    extDedupe, extSummarize, extGroupText, extMaskText, extStarMask,
+    EXT_PROFILES, EXT_DEFAULT_SETTINGS, EXT_HARD_IDS, EXT_PROFILE_ALIASES,
+    extMigrateSettings, extResolveEntities, extHostOf, extSiteEnabled,
+    extShouldIntercept, extDedupe, extSummarize, extGroupText, extMaskText,
+    extStarMask,
 };`)();
 
 const {
     ENTITY_LABELS, FRIENDLY_LABELS, analyzeText, deAnonymize,
-    EXT_PROFILES, EXT_DEFAULT_SETTINGS,
-    extResolveEntities, extHostOf, extSiteEnabled, extShouldIntercept,
-    extDedupe, extSummarize, extGroupText, extMaskText, extStarMask,
+    EXT_PROFILES, EXT_DEFAULT_SETTINGS, EXT_HARD_IDS, EXT_PROFILE_ALIASES,
+    extMigrateSettings, extResolveEntities, extHostOf, extSiteEnabled,
+    extShouldIntercept, extDedupe, extSummarize, extGroupText, extMaskText,
+    extStarMask,
 } = api;
 
 const ALL = Object.keys(ENTITY_LABELS);
@@ -61,46 +63,104 @@ const settingsOf = over => ({ ...EXT_DEFAULT_SETTINGS, ...over });
 section('Profil çözümlemesi');
 
 {
-    const guvenli = extResolveEntities(settingsOf({ profile: 'guvenli' }), ALL);
-    const hukuk = extResolveEntities(settingsOf({ profile: 'hukuk' }), ALL);
+    const dar = extResolveEntities(settingsOf({ profile: 'dar' }), ALL);
+    const dengeli = extResolveEntities(settingsOf({ profile: 'dengeli' }), ALL);
     const tumu = extResolveEntities(settingsOf({ profile: 'tumu' }), ALL);
 
     eq('tümü profili 102 türün hepsini açar', tumu.size, ALL.length);
 
-    // Doğrudan kimliklendiriciler her profilde açık olmalı
+    // Kapsam gerçekten artan sırada olmalı: dar ⊂ dengeli ⊂ tumu
+    check('dar ⊂ dengeli', [...dar].every(e => dengeli.has(e)),
+        [...dar].filter(e => !dengeli.has(e)).join(', '));
+    check('dengeli ⊂ tumu', [...dengeli].every(e => tumu.has(e)));
+    check('dar < dengeli < tumu (boyut)', dar.size < dengeli.size && dengeli.size < tumu.size,
+        dar.size + ' / ' + dengeli.size + ' / ' + tumu.size);
+
+    // Kesin kimliklendiriciler HER profilde açık — dar profil bile bunları kaçırmamalı
     for (const e of ['TR_NATIONAL_ID', 'IBAN_CODE', 'PHONE_NUMBER', 'EMAIL_ADDRESS',
-                     'PERSON_NAME', 'ADDRESS', 'CREDIT_CARD', 'HEALTH_CONDITION']) {
-        check('güvenli profili ' + e + ' içerir', guvenli.has(e));
+                     'CREDIT_CARD', 'TR_PASAPORT', 'TR_LICENSE_PLATE']) {
+        check('dar profili ' + e + ' içerir', dar.has(e));
+        check('dengeli profili ' + e + ' içerir', dengeli.has(e));
     }
 
-    // Genel web metninde gürültü yapan türler hiçbir varsayılan profilde olmamalı
+    // Dar profil bilerek isim/yer/kurum maskelemez — adı da bunu söylüyor
+    for (const e of ['PERSON_NAME', 'LOCATION', 'ADDRESS', 'ORGANIZATION']) {
+        check('dar profili ' + e + ' içermez', !dar.has(e));
+    }
+
+    // ASIL REGRESYON: yer adları varsayılan profilde AÇIK olmalı.
+    // Eski "guvenli" varsayılanı LOCATION'ı kapatıyordu; "Düzce Cumayeri"
+    // hiç maskelenmiyordu ve profilin adı "Güvenli" olduğu için kullanıcı
+    // en korumalı ayarda olduğunu sanıyordu.
+    for (const e of ['LOCATION', 'ADDRESS', 'BIRTH_PLACE', 'PERSON_NAME',
+                     'ORGANIZATION', 'COURT', 'HEALTH_CONDITION', 'CASE_NUMBER']) {
+        check('dengeli (varsayılan) profili ' + e + ' içerir', dengeli.has(e));
+    }
+
+    // Gürültü türleri yalnızca "tumu" profilinde
     for (const e of ['URL', 'DOMAIN', 'DATE_TIME', 'TIME']) {
-        check('güvenli profili ' + e + ' içermez', !guvenli.has(e));
-        check('hukuk profili ' + e + ' içermez', !hukuk.has(e));
-        check('tümü profili ' + e + ' içerir', tumu.has(e));
+        check('dengeli profili ' + e + ' içermez', !dengeli.has(e));
+        check('tumu profili ' + e + ' içerir', tumu.has(e));
+    }
+    for (const e of ['AGE', 'GENDER', 'OCCUPATION', 'MONETARY_AMOUNT', 'LEGAL_CITATION']) {
+        check('dengeli profili zayıf niteleyici ' + e + ' içermez', !dengeli.has(e));
+        check('tumu profili ' + e + ' içerir', tumu.has(e));
     }
 
-    // Bağlama bağlı türler yalnızca hukuk (ve tümü) profilinde
-    for (const e of ['COURT', 'MONETARY_AMOUNT', 'OCCUPATION', 'AGE', 'LOCATION']) {
-        check('güvenli profili ' + e + ' içermez', !guvenli.has(e));
-        check('hukuk profili ' + e + ' içerir', hukuk.has(e));
-    }
-
-    check('hukuk profili güvenli profilin üst kümesi',
-        [...guvenli].every(e => hukuk.has(e)));
-
-    // Kullanıcının elle kapattığı tür profilden bağımsız kapanır
-    const custom = extResolveEntities(
+    // Kullanıcının elle kapattığı tür profilden bağımsız kapanır (include ve exclude'da)
+    const customWide = extResolveEntities(
         settingsOf({ profile: 'tumu', disabledEntities: ['PERSON_NAME', 'IBAN_CODE'] }), ALL);
-    check('kapatılan tür tümü profilinde de kapalı',
-        !custom.has('PERSON_NAME') && !custom.has('IBAN_CODE'));
-    eq('kapatılan tür sayısı düşer', custom.size, ALL.length - 2);
+    check('kapatılan tür tumu profilinde de kapalı',
+        !customWide.has('PERSON_NAME') && !customWide.has('IBAN_CODE'));
+    eq('kapatılan tür sayısı düşer', customWide.size, ALL.length - 2);
 
-    // Profil listeleri gerçek tür adları içermeli (yazım hatası koruması)
+    const customNarrow = extResolveEntities(
+        settingsOf({ profile: 'dar', disabledEntities: ['IBAN_CODE'] }), ALL);
+    check('beyaz listeli profilde de tür kapatılabilir', !customNarrow.has('IBAN_CODE'));
+    check('beyaz listeli profilde diğerleri açık kalır', customNarrow.has('TR_NATIONAL_ID'));
+
+    // Profil listelerinde yazım hatası olmasın
     for (const [name, p] of Object.entries(EXT_PROFILES)) {
-        const bogus = p.exclude.filter(e => !ALL.includes(e));
+        const names = p.include || p.exclude || [];
+        const bogus = names.filter(e => !ALL.includes(e));
         check(name + ' profilinde geçersiz tür adı yok', bogus.length === 0, bogus.join(', '));
+        check(name + ' profilinin etiketi var', !!p.label);
+        check(name + ' profilinin açıklaması var', !!p.hint);
     }
+    check('EXT_HARD_IDS içindeki her tür gerçek',
+        EXT_HARD_IDS.every(e => ALL.includes(e)),
+        EXT_HARD_IDS.filter(e => !ALL.includes(e)).join(', '));
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+section('Eski ayarların göçü');
+
+{
+    // Eski "guvenli" yer adlarını maskelemiyordu — kullanıcı orada bırakılmamalı,
+    // daha GENİŞ olan "dengeli"ye taşınmalı (asla daha dara değil).
+    eq('guvenli -> dengeli', extMigrateSettings({ profile: 'guvenli' }).profile, 'dengeli');
+    eq('hukuk -> dengeli', extMigrateSettings({ profile: 'hukuk' }).profile, 'dengeli');
+    eq('bilinmeyen profil -> dengeli', extMigrateSettings({ profile: 'zart' }).profile, 'dengeli');
+    eq('profil yoksa -> dengeli', extMigrateSettings({}).profile, 'dengeli');
+    eq('güncel profil korunur', extMigrateSettings({ profile: 'dar' }).profile, 'dar');
+    eq('tumu korunur', extMigrateSettings({ profile: 'tumu' }).profile, 'tumu');
+
+    // Göç kapsamı daraltmamalı
+    for (const [oldName, newName] of Object.entries(EXT_PROFILE_ALIASES)) {
+        const before = extResolveEntities({ ...EXT_DEFAULT_SETTINGS, profile: oldName }, ALL);
+        const after = extResolveEntities({ ...EXT_DEFAULT_SETTINGS, profile: newName }, ALL);
+        check('göç kapsamı daraltmıyor: ' + oldName + ' -> ' + newName,
+            after.size >= before.size, before.size + ' -> ' + after.size);
+    }
+
+    // Diğer ayarlar göçte bozulmamalı
+    const kept = extMigrateSettings({ profile: 'guvenli', style: 'star', perSite: { 'a.com': false } });
+    eq('göçte stil korunur', kept.style, 'star');
+    check('göçte site listesi korunur', kept.perSite['a.com'] === false);
+
+    // extResolveEntities eski adı doğrudan alsa da göçü kendisi uygulamalı
+    const legacy = extResolveEntities({ ...EXT_DEFAULT_SETTINGS, profile: 'guvenli' }, ALL);
+    check('eski profil adıyla çağrılsa da LOCATION açık', legacy.has('LOCATION'));
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -237,8 +297,8 @@ section('Maskeleme stilleri');
 section('Motorla uçtan uca (gerçek analyzeText)');
 
 {
-    const guvenli = extResolveEntities(settingsOf({ profile: 'guvenli' }), ALL);
-    const hukuk = extResolveEntities(settingsOf({ profile: 'hukuk' }), ALL);
+    const dengeli = extResolveEntities(settingsOf({ profile: 'dengeli' }), ALL);
+    const dar = extResolveEntities(settingsOf({ profile: 'dar' }), ALL);
     const th = EXT_DEFAULT_SETTINGS.threshold;
 
     // 1) Tipik bir hukuk yapıştırması: kimliklendiriciler yakalanmalı
@@ -247,7 +307,7 @@ section('Motorla uçtan uca (gerçek analyzeText)');
         'Kadıköy/İstanbul adresinde ikamet eden Ayşe Kaya\'ya ihtar gönderdi. ' +
         'İletişim: 0532 123 45 67, ahmet@example.com';
 
-    const lf = analyzeText(legal, guvenli, th);
+    const lf = analyzeText(legal, dengeli, th);
     check('TC kimlik yakalanır', !!findOf(lf, 'TR_NATIONAL_ID', '12345678901'));
     check('IBAN yakalanır', !!findOf(lf, 'IBAN_CODE'));
     check('telefon yakalanır', !!findOf(lf, 'PHONE_NUMBER'));
@@ -275,7 +335,7 @@ section('Motorla uçtan uca (gerçek analyzeText)');
         '  return res.json();\n' +
         '}\n' +
         '// TODO(2024-03-15): gRPC\'ye geç, RFC-8291 ve ENG-4471\n';
-    const cf = analyzeText(code, guvenli, th);
+    const cf = analyzeText(code, dengeli, th);
     check('kod parçasında yanlış alarm yok', cf.length === 0,
         cf.map(f => f.entity + '=' + JSON.stringify(f.value)).join(', '));
     check('kod parçası yakalanmaz', !extShouldIntercept(code, cf, settingsOf({})));
@@ -284,7 +344,7 @@ section('Motorla uçtan uca (gerçek analyzeText)');
     const chat = 'Merhaba, geçen hafta konuştuğumuz konuyu güncelledim. Toplantıyı ' +
         'pazartesiye aldık, sunum yirmi beş dakika sürecek. Ekipten dört kişi katılacak, ' +
         'kalanlar uzaktan bağlanır. Ayrıntılar dokümanda yazıyor, bakabilirsin.';
-    const chf = analyzeText(chat, guvenli, th);
+    const chf = analyzeText(chat, dengeli, th);
     check('sıradan sohbette yanlış alarm yok', chf.length === 0,
         chf.map(f => f.entity + '=' + JSON.stringify(f.value)).join(', '));
 
@@ -292,26 +352,46 @@ section('Motorla uçtan uca (gerçek analyzeText)');
     const en = 'Hey team, quick update on the roadmap. We shipped the caching layer ' +
         'last Thursday and latency dropped at p99. Next up is the search rewrite, ' +
         'I would budget about three weeks for it. Let me know if the numbers look off.';
-    const ef = analyzeText(en, guvenli, th);
+    const ef = analyzeText(en, dengeli, th);
     check('İngilizce sohbette yanlış alarm yok', ef.length === 0,
         ef.map(f => f.entity + '=' + JSON.stringify(f.value)).join(', '));
 
-    // 5) Profil farkı gerçekten çıktıya yansıyor mu
+    // 5) YER ADI REGRESYONU — gerçek kullanıcı raporu.
+    //    "Düzce Cumayeri" ve "Cumayeri Mahallesi" varsayılan profilde
+    //    maskelenmiyordu, çünkü eski varsayılan LOCATION'ı kapatıyordu.
+    //    Bunlar KVKK açısından kimliklendirici; varsayılanda yakalanmalı.
+    for (const yer of ['Düzce Cumayeri', 'Cumayeri Mahallesi', 'Düzce Cumayeri mahallesi',
+                       'Cumayeri Mah. No:5', 'İstanbul Kadıköy', 'Ankara Çankaya']) {
+        const f = analyzeText(yer, dengeli, th);
+        check('varsayılan profil yer adını yakalar: "' + yer + '"',
+            f.some(x => x.entity === 'LOCATION' || x.entity === 'ADDRESS'),
+            f.map(x => x.entity).join(',') || 'hiç bulgu yok');
+        check('yer adı yakalama eşiğini geçer: "' + yer + '"',
+            extShouldIntercept(yer, f, settingsOf({})));
+    }
+
+    // Dar profil bunları bilerek maskelemez (adı da öyle diyor)
+    check('dar profil yer adını maskelemez',
+        !analyzeText('Düzce Cumayeri', dar, th).some(x => x.entity === 'LOCATION'));
+
+    // 6) Profil farkı gerçekten çıktıya yansıyor mu
     const courtText = 'İstanbul 3. Asliye Hukuk Mahkemesi 2023/456 E. sayılı dosyada ' +
         '45.000 TL vekalet ücretine hükmetti.';
-    const cg = analyzeText(courtText, guvenli, th);
-    const chk = analyzeText(courtText, hukuk, th);
-    check('güvenli profilde mahkeme adı maskelenmez', !findOf(cg, 'COURT'));
-    check('hukuk profilinde mahkeme adı maskelenir', !!findOf(chk, 'COURT'));
-    check('hukuk profili güvenliden çok bulur', chk.length > cg.length,
-        'güvenli=' + cg.length + ' hukuk=' + chk.length);
+    const cDar = analyzeText(courtText, dar, th);
+    const cDengeli = analyzeText(courtText, dengeli, th);
+    check('dar profilde mahkeme adı maskelenmez', !findOf(cDar, 'COURT'));
+    check('dengeli profilde mahkeme adı maskelenir', !!findOf(cDengeli, 'COURT'));
+    check('dengeli profil dardan çok bulur', cDengeli.length > cDar.length,
+        'dar=' + cDar.length + ' dengeli=' + cDengeli.length);
+    check('dengeli profil tutarı maskelemez (zayıf niteleyici)',
+        !findOf(cDengeli, 'MONETARY_AMOUNT'));
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 section('Varsayılan ayarlar');
 
 eq('varsayılan mod: önce sor', EXT_DEFAULT_SETTINGS.mode, 'preview');
-eq('varsayılan profil: güvenli', EXT_DEFAULT_SETTINGS.profile, 'guvenli');
+eq('varsayılan profil: dengeli', EXT_DEFAULT_SETTINGS.profile, 'dengeli');
 eq('varsayılan stil: geri çevrilebilir token', EXT_DEFAULT_SETTINGS.style, 'token');
 check('varsayılan açık', EXT_DEFAULT_SETTINGS.enabled === true);
 check('varsayılan eşik makul aralıkta',

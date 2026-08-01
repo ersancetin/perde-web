@@ -10,17 +10,11 @@
 // yenilendikten sonra da çözebilmek için); eklentide oturum belleği yeterli ve
 // gizlilik açısından daha iyi.
 
-const DEFAULTS = {
-    enabled: true,
-    profile: 'guvenli',
-    mode: 'preview',
-    style: 'token',
-    threshold: 0.4,
-    minLength: 6,
-    typingHints: true,
-    disabledEntities: [],
-    perSite: {},
-};
+// Profil tanımları, varsayılanlar ve göç mantığı tek yerde: policy.js.
+// (Sadece sabit tanımlar ve saf fonksiyonlar; motoru yüklemeye gerek yok.)
+importScripts('/src/policy.js');
+
+const DEFAULTS = EXT_DEFAULT_SETTINGS;
 
 const MAP_LIMIT = 4000;   // site başına saklanacak en fazla token sayısı
 
@@ -28,7 +22,17 @@ const MAP_LIMIT = 4000;   // site başına saklanacak en fazla token sayısı
 
 chrome.runtime.onInstalled.addListener(async () => {
     const { settings } = await chrome.storage.local.get('settings');
-    if (!settings) await chrome.storage.local.set({ settings: DEFAULTS });
+    if (!settings) {
+        await chrome.storage.local.set({ settings: DEFAULTS });
+    } else {
+        // Sürüm yükseltmesinde eski profil adlarını taşı. Eski "guvenli" yer
+        // adlarını maskelemiyordu; kullanıcıyı orada bırakmamak için kaydı
+        // güncelleyip diske yazıyoruz (yoksa her okumada tekrar çevirmek gerekir).
+        const migrated = extMigrateSettings({ ...DEFAULTS, ...settings });
+        if (migrated.profile !== settings.profile) {
+            await chrome.storage.local.set({ settings: migrated });
+        }
+    }
 
     chrome.contextMenus.create({
         id: 'perde-decode',
@@ -132,6 +136,47 @@ async function bumpStat(n) {
     s.masked += n;
     await chrome.storage.local.set({ stats: s });
 }
+
+// ─── Araç çubuğu rozeti ──────────────────────────────────────────────────────
+//
+// Kullanıcı "neden maskelemedi?" diye sorduğunda ilk bakacağı yer ikon olmalı:
+// eklenti ya da bu site kapalıysa ikonun üstünde işaret çıkar.
+
+async function refreshBadge(tabId, url) {
+    if (tabId == null) return;
+    const host = url ? extHostOf(url) : '';
+    if (!host) return;
+    const { settings } = await chrome.storage.local.get('settings');
+    const s = extMigrateSettings({ ...DEFAULTS, ...(settings || {}) });
+    const on = extSiteEnabled(s, host);
+    try {
+        await chrome.action.setBadgeText({ tabId, text: on ? '' : '✕' });
+        await chrome.action.setBadgeBackgroundColor({ tabId, color: '#96948c' });
+        await chrome.action.setTitle({
+            tabId,
+            title: on
+                ? 'Perde — bu sitede açık (' + (EXT_PROFILES[s.profile] || {}).label + ' kapsam)'
+                : 'Perde — bu sitede kapalı',
+        });
+    } catch (_) { /* sekme kapanmış olabilir */ }
+}
+
+chrome.tabs.onActivated.addListener(async ({ tabId }) => {
+    try {
+        const tab = await chrome.tabs.get(tabId);
+        refreshBadge(tabId, tab.url);
+    } catch (_) {}
+});
+
+chrome.tabs.onUpdated.addListener((tabId, info, tab) => {
+    if (info.status === 'complete' || info.url) refreshBadge(tabId, tab.url);
+});
+
+chrome.storage.onChanged.addListener(async (changes, area) => {
+    if (area !== 'local' || !changes.settings) return;
+    const tabs = await chrome.tabs.query({});
+    for (const t of tabs) refreshBadge(t.id, t.url);
+});
 
 // ─── Kullanıcının eklediği ek siteler ────────────────────────────────────────
 //

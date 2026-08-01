@@ -316,7 +316,57 @@ function stageExtension() {
     check('kişi adı geri geldi', /Ahmet Yılmaz/.test(decoded), decoded.slice(0, 300));
     check('TC geri geldi', /12345678901/.test(decoded), decoded.slice(0, 300));
 
-    // ── 9) Konsol temizliği ──
+    // ── 9) Popup: "Dene" alanı ──
+    // Popup artık motoru yükleyip canlı analiz yapıyor; burada hata olursa
+    // kullanıcı ayarları hiç göremez, o yüzden ayrı sayfa olarak test ediliyor.
+    section('popup "Dene" alanı');
+    const extId = worker().url().split('/')[2];
+    const pop = await context.newPage();
+    const popErrors = [];
+    pop.on('console', m => { if (m.type() === 'error') popErrors.push(m.text()); });
+    pop.on('pageerror', e => popErrors.push('pageerror: ' + e.message));
+    await pop.goto('chrome-extension://' + extId + '/src/popup.html?full=1');
+    await pop.waitForTimeout(900);
+
+    check('popup açıldı', await pop.title() === 'Perde');
+    check('profil düğmeleri etiketlendi',
+        (await pop.$eval('#profile', e => e.textContent)).includes('Dengeli'));
+    check('kapsam sayacı doldu',
+        /\d+ \/ \d+ veri türü açık/.test(await pop.$eval('#coverage', e => e.textContent)),
+        await pop.$eval('#coverage', e => e.textContent));
+
+    // Kullanıcının bildirdiği metni popup'ta dene
+    await pop.fill('#probe', 'Düzce Cumayeri Mahallesi, TC 12345678901');
+    await pop.waitForTimeout(700);
+    let probe = await pop.$eval('#probeOut', e => e.textContent);
+    check('dene alanı yer adını buldu', /Konum|Adres/.test(probe), probe.slice(0, 200));
+    check('dene alanı TC buldu', /TC Kimlik/.test(probe), probe.slice(0, 200));
+    check('dene alanı maskeli hali gösterdi', /\[KONUM_1\]|\[ADRES_1\]|\[TC_KIMLIK_1\]/.test(probe),
+        probe.slice(0, 300));
+
+    // Dar profile geçince yer adı düşmeli, TC kalmalı
+    await pop.click('#profile button[data-v="dar"]');
+    await pop.waitForTimeout(700);
+    probe = await pop.$eval('#probeOut', e => e.textContent);
+    check('dar profilde TC yine bulunur', /TC Kimlik/.test(probe), probe.slice(0, 200));
+    // "Konum" kelimesi geniş-profil önerisinde de geçiyor; o yüzden maskeli
+    // çıktıya bakıyoruz: dar profilde yer adı AÇIK kalmalı.
+    check('dar profilde yer adı maskesiz kalır',
+        probe.includes('Düzce Cumayeri Mahallesi, TC [TC_KIMLIK_1]'), probe.slice(0, 220));
+    check('dar profilde tek tespit var', /\b1 tespit —/.test(probe), probe.slice(0, 120));
+    check('daha geniş profil önerisi çıktı', /profilinde .* tespit daha/.test(probe),
+        probe.slice(0, 300));
+
+    // Temiz metin: "hiçbir şey maskelenmez" demeli
+    await pop.fill('#probe', 'bana kısa bir dilekçe taslağı yazar mısın');
+    await pop.waitForTimeout(700);
+    probe = await pop.$eval('#probeOut', e => e.textContent);
+    check('temiz metinde uyarı yok', /hiçbir şey maskelenmez/.test(probe), probe.slice(0, 200));
+
+    check('popup JS hatası yok', popErrors.length === 0, popErrors.slice(0, 4).join('\n      '));
+    await pop.close();
+
+    // ── 10) Konsol temizliği ──
     section('konsol');
     check('sayfada JS hatası yok', errors.length === 0, errors.slice(0, 5).join('\n      '));
 

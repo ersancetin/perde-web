@@ -86,6 +86,55 @@ kbd {
     background: var(--accent-light); border: 1px solid var(--border);
     border-radius: 4px; padding: 1px 4px; color: var(--text-2);
 }
+/* Kapsam sayacı */
+.cov { font-size: 11px; color: var(--text-3); margin-top: 5px; }
+.cov b { color: var(--text-2); font-weight: 600; }
+
+/* Deneme alanı */
+textarea#probe {
+    width: 100%; font-family: inherit; font-size: 12px; line-height: 1.45;
+    padding: 7px 9px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--surface); color: var(--text); resize: vertical; min-height: 56px;
+}
+textarea#probe:focus { outline: none; border-color: var(--text-3); }
+textarea#probe::placeholder { color: var(--text-3); }
+
+.probe-out { margin-top: 8px; font-size: 12px; }
+.probe-out .none { color: var(--text-3); font-size: 11.5px; }
+.probe-hit {
+    display: flex; align-items: baseline; gap: 6px;
+    padding: 4px 0; border-bottom: 1px solid var(--border-light);
+}
+.probe-hit:last-of-type { border-bottom: none; }
+.probe-hit .v {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11.5px; flex: 1; min-width: 0; word-break: break-word;
+}
+.probe-hit .t {
+    font-size: 10px; font-weight: 600; background: var(--accent-light);
+    color: var(--text-2); padding: 1px 5px; border-radius: 4px; flex: none;
+}
+.probe-hit .s { font-size: 10px; color: var(--text-3); flex: none; }
+.probe-sum { font-size: 11.5px; color: var(--text-2); margin-bottom: 6px; }
+.probe-sum b { font-weight: 600; }
+.probe-miss {
+    margin-top: 8px; padding: 7px 9px; border-radius: var(--radius-sm);
+    background: #fdf3e3; border: 1px solid #f0e3c8;
+    font-size: 11.5px; color: #7a5a18; line-height: 1.45;
+}
+.probe-miss button {
+    font-family: inherit; font-size: 11.5px; font-weight: 600;
+    background: none; border: none; padding: 0; margin-top: 4px;
+    color: #6b4d14; text-decoration: underline; cursor: pointer; display: block;
+}
+.probe-masked {
+    margin-top: 8px; padding: 7px 9px; border-radius: var(--radius-sm);
+    background: var(--accent-light); border: 1px solid var(--border-light);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px; line-height: 1.5; color: var(--text-2);
+    word-break: break-word; max-height: 90px; overflow-y: auto;
+}
+
 footer { padding: 9px 13px; font-size: 11px; color: var(--text-3); text-align: center; }
 footer a { color: var(--text-2); }
 .site { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11.5px; }
@@ -108,7 +157,7 @@ footer a { color: var(--text-2); }
 <section>
     <div class="lbl">Bu site</div>
     <div class="row">
-        <span class="grow"><span class="site" id="host">—</span></span>
+        <span class="grow"><span id="host">—</span></span>
         <input type="checkbox" id="siteOn">
     </div>
     <div class="hint" id="siteHint"></div>
@@ -126,11 +175,12 @@ footer a { color: var(--text-2); }
 <section>
     <div class="lbl">Kapsam</div>
     <div class="seg" id="profile">
-        <button data-v="guvenli" aria-pressed="false">Güvenli</button>
-        <button data-v="hukuk" aria-pressed="false">Hukuk</button>
+        <button data-v="dar" aria-pressed="false">Dar</button>
+        <button data-v="dengeli" aria-pressed="false">Dengeli</button>
         <button data-v="tumu" aria-pressed="false">Tümü</button>
     </div>
     <div class="hint" id="profileHint"></div>
+    <div class="cov" id="coverage"></div>
 </section>
 
 <section>
@@ -151,6 +201,13 @@ footer a { color: var(--text-2); }
         </span>
         <input type="checkbox" id="typingHints">
     </div>
+</section>
+
+<section>
+    <div class="lbl">Dene — ne maskelenir?</div>
+    <textarea id="probe" rows="3" spellcheck="false"
+        placeholder="Buraya bir metin yaz veya yapıştır — mevcut ayarlarla ne yakalanacağını gösterir. Örn: Düzce Cumayeri Mahallesi, TC 12345678901"></textarea>
+    <div id="probeOut" class="probe-out"></div>
 </section>
 
 <section>
@@ -175,6 +232,11 @@ footer a { color: var(--text-2); }
 
 <footer>Tüm analiz bu tarayıcıda çalışır — metin hiçbir sunucuya gitmez.</footer>
 
+<script src="../engine/dictionaries.js"></script>
+<script src="../engine/recognizers.js"></script>
+<script src="../engine/ner-engine.js"></script>
+<script src="../engine/ai-workflow.js"></script>
+<script src="policy.js"></script>
 <script src="popup.js"></script>
 </body>
 </html>

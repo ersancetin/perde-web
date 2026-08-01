@@ -12,6 +12,21 @@ All notable changes to Perde Web are documented here.
 - Token map lives in `chrome.storage.session` — memory only, never written to disk, gone when the browser closes, and clearable from the popup. This is **stricter than the web app's `localStorage`**, which deliberately survives reloads.
 - Deliberately no `<all_urls>`: a fixed https allowlist of AI sites, with opt-in per-site additions registered at runtime. Password fields are never touched. **151 new unit tests** covering profile resolution, site scoping, overlap dedupe, all three mask styles, token round-trip, real-engine end-to-end behaviour, and `manifest.json` integrity (declared files exist, load order, no broad permissions).
 
+### Fixed — the default profile did not mask place names, and its name said otherwise
+Reported from real use: typing `Düzce Cumayeri` or `Cumayeri Mahallesi` masked nothing. The engine detects all of them correctly — the bug was the extension's profile design. The default profile excluded `LOCATION` on the theory that place names are noise in casual chat. For a Turkish legal/KVKK tool that is simply wrong: neighbourhood, district and city are core identifying data, and `Düzce Cumayeri Mahallesi No:5` is effectively someone's address.
+
+Worse, that profile was called **"Güvenli"** (*Safe*). In a privacy tool the narrowest setting must never carry the most reassuring name — the user picks it believing they are maximally protected. Profiles are now named for what they cover, ordered strictly by coverage (`dar ⊂ dengeli ⊂ tumu`), and a test enforces that containment:
+- **Dar** (40 types) — format-recognisable identifiers only: TC, IBAN, phone, e-mail, card, passport, plate, IP. Names, places and organisations are explicitly **not** masked, and the label says so.
+- **Dengeli** (89 types, **new default**) — Dar + person, organisation, **location, address**, birthplace, health/KVKK, case and court data.
+- **Tümü** (102 types) — everything, including URL/date/time/amount/occupation/age.
+
+Stored `guvenli` and `hukuk` settings migrate to `dengeli` on upgrade — always toward wider coverage, never narrower, and a test asserts the migration can only widen. `extMigrateSettings` lives in `policy.js` and is applied by the service worker (which rewrites the stored record), the popup, and the content script, so a stale read can't leave someone on a narrower profile than they think.
+
+### Added — a "Dene" (try it) panel in the popup, and a toolbar badge
+The user-visible half of the same problem: when nothing happened, there was no way to tell *detection found nothing* from *the profile excluded it*. The popup now loads the engine and answers that directly — type or paste text and it lists every detection (type + confidence), renders the masked result in the chosen style, and if a wider profile would catch more it says how many and offers a one-click switch. The toolbar icon also shows a badge and tooltip when the extension or the current site is switched off, so "why didn't it mask?" has an answer at a glance.
+
+The popup is real code now, so the browser test covers it too (49 → **61** checks). Extension unit tests 157 → **207**, with the reported inputs (`Düzce Cumayeri`, `Cumayeri Mahallesi`, `Cumayeri Mah. No:5`, `İstanbul Kadıköy`, `Ankara Çankaya`) locked in as regressions.
+
 ### Fixed — `minLength` was silently skipping short identifiers
 The paste/typing gate defaulted to 12 characters, but the engine detects identifiers well below that: a bare phone number is 11 (`05321234567`), the shortest e-mail 6 (`a@b.co`). Anything shorter than the gate was never even analysed — a straight leak in the layer whose whole job is not to leak. The gate exists to avoid pointless work on trivial pastes, not to make safety decisions, so it is now pinned to the engine's own floor (**6**) and a test asserts it stays there: it feeds bare identifiers through `extShouldIntercept` and fails if the gate filters something the engine detects.
 

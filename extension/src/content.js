@@ -31,7 +31,10 @@
     // ─── Ayarlar ──────────────────────────────────────────────────────────────
 
     function applySettings(s) {
-        settings = { ...EXT_DEFAULT_SETTINGS, ...(s || {}) };
+        // extMigrateSettings: eski profil adlarını ("guvenli") güncel adlara taşır.
+        // Service worker kaydı da güncelliyor ama content script daha önce
+        // okuyabilir, o yüzden burada da çeviriyoruz.
+        settings = extMigrateSettings({ ...EXT_DEFAULT_SETTINGS, ...(s || {}) });
         enabledEntities = extResolveEntities(settings, ALL_ENTITIES);
         active = extSiteEnabled(settings, location.hostname);
         if (!active) hideUI();

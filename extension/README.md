@@ -4,7 +4,7 @@ Yapay zeka sitelerine **yapıştırdığın metindeki kişisel verileri, metin s
 girmeden** maskeler. Perde Web'in aynı tespit motorunu kullanır; hiçbir şey
 sunucuya gitmez.
 
-> **Durum:** çalışan prototip (v0.1.0). Chrome Web Store'a yüklenmedi, elle
+> **Durum:** çalışan prototip (v0.2.0). Chrome Web Store'a yüklenmedi, elle
 > "paketlenmemiş öğe" olarak kurulur. Aşağıdaki **Bilinen sınırlar** bölümünü
 > okumadan güvenme.
 
@@ -39,7 +39,13 @@ yazarken alanın içeriğine dokunmak imleci kaydırır ve ProseMirror/Lexical g
 editörlerin durumunu bozar. Yazarken yalnızca *etiketler*, maskeleme tek tıkla
 veya <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>M</kbd> ile olur.
 
-**3. Cevabı geri çözer.** Varsayılan stil geri çevrilebilir token'lar üretir
+**3. "Dene" alanı — neden maskelemedi?** Eklenti ikonuna tıkla, alttaki
+**Dene** kutusuna metni yaz veya yapıştır: mevcut ayarlarla tam olarak neyin
+yakalandığını (tür + güven yüzdesi), maskeli halinin nasıl görüneceğini ve daha
+geniş bir profilin ne ekleyeceğini gösterir. "Tespit mi yok, profil mi kapatıyor"
+sorusunun cevabı burada.
+
+**4. Cevabı geri çözer.** Varsayılan stil geri çevrilebilir token'lar üretir
 (`[KISI_1]`, `[IBAN_1]`). Yapay zekânın cevabını seçip
 <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>D</kbd> (veya sağ tık → *Perde: token'ları
 çöz*) dersen token'lar gerçek değerlere döner. Asıl kazanç bu: veri dışarı
@@ -65,25 +71,36 @@ zamanla ayrışmaz.
 | Ayar | Seçenekler | Varsayılan |
 |---|---|---|
 | **Yapıştırınca** | Önce sor · Sessiz maskele | Önce sor |
-| **Kapsam** | Güvenli · Hukuk · Tümü | Güvenli |
+| **Kapsam** | Dar · Dengeli · Tümü | Dengeli |
 | **Maskeleme stili** | `[KISI_1]` · `<Kişi>` · `****` | `[KISI_1]` |
 | **Yazarken de uyar** | açık / kapalı | açık |
 | **Site** | site site açılıp kapatılabilir | hepsi açık |
 
 ### Kapsam profilleri
 
-- **Güvenli** *(varsayılan)* — doğrudan kimliklendiriciler: TC, IBAN, telefon,
-  e-posta, kişi, kurum, adres, KVKK özel nitelikli veriler, uluslararası
-  kimlikler. Günlük sohbette ve kod parçalarında yanlış alarm vermez.
-- **Hukuk** — Güvenli + mahkeme, dosya no, tutar, tarih, meslek, konum gibi dava
-  metnini kimliklendiren alanlar. Dilekçe/karar yapıştıranlar için.
-- **Tümü** — motorun bildiği 102 türün hepsi, URL ve tarihler dahil. En
-  kapsamlı, en gürültülü.
+Kapsamı **artan** sırada: `dar ⊂ dengeli ⊂ tumu`. Profil adı kapsamı dürüst
+anlatır — bir gizlilik aracında isim, korumayı olduğundan geniş göstermemeli.
 
-`URL`, `DOMAIN`, `DATE_TIME`, `TIME` türleri hiçbir *varsayılan* profilde yok:
-genel web metninde sürekli tetikleniyor ve tek başlarına kimliklendirici
-değiller. Eklenti her yapıştırmayı kestiği için buradaki gürültü, web
-uygulamasındakinin aksine doğrudan kullanılabilirliği bozuyor.
+- **Dar** (40 tür) — yalnızca biçiminden tanınan kesin kimliklendiriciler: TC,
+  IBAN, telefon, e-posta, kart, pasaport, plaka, IP. **İsim, yer adı ve kurum
+  maskelenmez.** Sadece numaraların gitmesini engellemek isteyenler için.
+- **Dengeli** (89 tür, *varsayılan*) — Dar + kişi adı, kurum, **yer adı, adres**,
+  doğum yeri, sağlık/KVKK verileri, dosya ve mahkeme bilgileri. KVKK açısından
+  kimliklendirici sayılan her şey kapsamda.
+- **Tümü** (102 tür) — hepsi: URL, tarih, saat, tutar, meslek, yaş dahil. En
+  kapsamlı ama en çok yanlış alarm veren seçenek.
+
+Dengeli profilin dışarıda bıraktığı iki grup:
+`URL`/`DOMAIN`/`DATE_TIME`/`TIME` (genel metinde sürekli tetiklenir, tek başına
+kimseyi işaret etmez) ve zayıf niteleyiciler `AGE`/`GENDER`/`OCCUPATION`/
+`MARITAL_STATUS`/`MONETARY_AMOUNT`/`LEGAL_CITATION` ("avukat", "35 yaşında",
+"45.000 TL", "Yargıtay 2. HD 2019/123" — sonuncusu kamusal bilgi).
+
+> **Sürüm notu (v0.1.0 → v0.2.0):** eski varsayılan profilin adı **"Güvenli"**ydi
+> ve `LOCATION`'ı kapatıyordu — yani `Düzce Cumayeri` gibi yer adları hiç
+> maskelenmiyordu, ama adı yüzünden kullanıcı en korumalı ayarda olduğunu
+> sanıyordu. Kayıtlı `guvenli` ve `hukuk` ayarları otomatik olarak `dengeli`ye
+> taşınır (asla daha dara değil).
 
 ## Hangi sitelerde çalışır
 
@@ -155,14 +172,16 @@ engine/                ÜRETİLMİŞ — kökten kopyalanır, .gitignore'da
 icons/                 ÜRETİLMİŞ — .gitignore'da
 ```
 
-`policy.js` bilerek DOM'suz tutuldu; profil çözümlemesi, çakışan bulguların
-ayıklanması, maskeleme stilleri ve token round-trip'i `node extension/test.js`
-ile doğrudan test ediliyor (151 test).
+`policy.js` bilerek DOM'suz tutuldu; profil çözümlemesi, ayar göçü, çakışan
+bulguların ayıklanması, maskeleme stilleri ve token round-trip'i
+`node extension/test.js` ile doğrudan test ediliyor (207 test). Profil tanımları,
+varsayılanlar ve göç mantığı tek kaynak: `policy.js`. Popup, service worker ve
+content script hepsi onu yükler — ikinci bir kopya yok.
 
 ## Test
 
 ```bash
-npm test          # kök (2267) + eklenti (151)
+npm test          # kök (2267) + eklenti (207)
 npm run test:ext  # yalnızca eklenti
 ```
 
@@ -175,11 +194,11 @@ npm run build:ext
 node extension/tools/e2e.js            # başsız ortamda: xvfb-run -a node ...
 ```
 
-49 kontrol: yapıştırmanın kesilmesi, maskeli metnin textarea ve contenteditable'a
+61 kontrol: yapıştırmanın kesilmesi, maskeli metnin textarea ve contenteditable'a
 yazılması, şifre alanına dokunulmaması, üç maskeleme stili, site/ana şalter,
-yazarken rozet, token round-trip. Eklentinin en kırılgan yeri burası ve ilk
-çalıştırmada iki gerçek hata yakaladı (bkz. CHANGELOG) — saf mantık testleriyle
-bulunamayacak iki panel kapanma hatası.
+yazarken rozet, token round-trip ve popup'ın "Dene" alanı. Eklentinin en kırılgan
+yeri burası ve ilk çalıştırmada iki gerçek hata yakaladı (bkz. CHANGELOG) — saf
+mantık testleriyle bulunamayacak iki panel kapanma hatası.
 
 Eklenti testleri motoru kökten yükler, `extension/engine/` kopyasına bakmaz —
 yani `build:ext` çalıştırmadan da testler geçer. `manifest.json`'da bildirilen
